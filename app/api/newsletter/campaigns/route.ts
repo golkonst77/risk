@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.SUPABASE_KEY
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Supabase environment variables not configured")
-  }
-
-  return createClient(supabaseUrl, supabaseKey)
-}
+// Static mode
 
 // Функция для создания таблиц если их нет
 async function ensureTablesExist() {
@@ -98,68 +88,7 @@ async function ensureTablesExist() {
 }
 
 // Получение списка кампаний
-export async function GET() {
-  try {
-    const supabase = getSupabaseClient()
-    
-    // Убеждаемся что таблицы существуют
-    await ensureTablesExist()
-    
-    const { data: campaigns, error } = await supabase
-      .from('newsletter_campaigns')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Supabase error:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json(campaigns)
-  } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
+export async function GET() { return NextResponse.json([]) }
 
 // Создание новой кампании
-export async function POST(request: NextRequest) {
-  try {
-    const supabase = getSupabaseClient()
-    
-    // Убеждаемся что таблицы существуют
-    await ensureTablesExist()
-    
-    const { subject, content, scheduledAt } = await request.json()
-
-    if (!subject || !content) {
-      return NextResponse.json({ error: 'Subject and content are required' }, { status: 400 })
-    }
-
-    const campaignData: any = {
-      subject,
-      content,
-      status: scheduledAt ? 'scheduled' : 'draft',
-    }
-
-    if (scheduledAt) {
-      campaignData.scheduled_at = scheduledAt
-    }
-
-    const { data: campaign, error } = await supabase
-      .from('newsletter_campaigns')
-      .insert([campaignData])
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Supabase error:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json(campaign)
-  } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-} 
+export async function POST() { return NextResponse.json({ disabled: true, reason: 'static-mode' }, { status: 501 }) }

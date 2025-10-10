@@ -1,44 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
 
 export const dynamic = "force-dynamic"
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-let supabase: any = null
-if (supabaseUrl && supabaseKey) {
-  supabase = createClient(supabaseUrl, supabaseKey)
-}
+const filePath = join(process.cwd(), 'data', 'local-reviews.json')
 
 export async function GET(request: NextRequest) {
   try {
-    if (!supabase) throw new Error('Supabase not configured')
-    const { data: reviews, error } = await supabase
-      .from('reviews')
-      .select('*')
-      .eq('is_published', true)
-      .order('created_at', { ascending: false })
-      .limit(50)
-    if (error) throw error
+    const raw = await readFile(filePath, 'utf-8')
+    const parsed = JSON.parse(raw)
+    const reviews = (parsed.reviews ?? parsed) as any[]
     return NextResponse.json({
       success: true,
-      reviews: reviews || [],
-      total: (reviews || []).length,
+      reviews,
+      total: reviews.length,
       summary: {
-        totalReviews: (reviews || []).length,
-        averageRating: reviews && reviews.length > 0 ? Math.round((reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length) * 10) / 10 : 5.0
+        totalReviews: reviews.length,
+        averageRating: reviews.length > 0 ? Math.round((reviews.reduce((sum: number, r: any) => sum + (r.rating || 5), 0) / reviews.length) * 10) / 10 : 5.0
       },
-      sources: [
-        {
-          name: 'Supabase',
-          status: 'success',
-          count: (reviews || []).length
-        }
-      ]
     })
   } catch (error) {
-    // fallback: демо-отзывы
     const demoReviews = [
       {
         id: 'demo-1',
@@ -71,22 +52,6 @@ export async function GET(request: NextRequest) {
         published_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
       }
     ]
-    return NextResponse.json({
-      success: false,
-      reviews: demoReviews,
-      total: demoReviews.length,
-      summary: {
-        totalReviews: demoReviews.length,
-        averageRating: 5.0
-      },
-      sources: [
-        {
-          name: 'Demo',
-          status: 'success',
-          count: demoReviews.length
-        }
-      ],
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 200 })
+    return NextResponse.json({ success: true, reviews: demoReviews, total: demoReviews.length, summary: { totalReviews: demoReviews.length, averageRating: 5.0 } })
   }
 } 
