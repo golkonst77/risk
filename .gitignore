@@ -62,3 +62,7 @@ cache/
 .env.local
 .env.production
 .env.development
+
+.cursor/
+.cursorrules
+
