@@ -1,59 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
 export async function GET() {
-  try {
-    // Проверяем переменные окружения
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    
-    if (!supabaseUrl || !serviceRoleKey) {
-      return NextResponse.json({
-        success: false,
-        error: 'Отсутствуют переменные окружения Supabase',
-        missing: {
-          supabaseUrl: !supabaseUrl,
-          serviceRoleKey: !serviceRoleKey
-        }
-      }, { status: 400 })
-    }
-
-    // Создаем клиент Supabase
-    const supabase = createClient(supabaseUrl, serviceRoleKey)
-    
-    // Тестируем подключение к базе данных
-    let dbConnection = false
-    try {
-      const { data, error } = await supabase
-        .from('settings')
-        .select('id')
-        .limit(1)
-      
-      if (error) {
-        console.error('Ошибка подключения к БД:', error)
-      } else {
-        dbConnection = true
-        console.log('✅ Подключение к БД успешно')
-      }
-    } catch (dbError) {
-      console.error('Ошибка при тесте БД:', dbError)
-    }
-
-    // Тестируем email функционал (без реальной отправки)
-    let emailService = false
-    try {
-      // Проверяем, доступен ли email сервис через auth
-      const { data: emailTest, error: emailError } = await supabase.auth.admin.listUsers()
-      
-      if (emailError) {
-        console.error('Ошибка email сервиса:', emailError)
-      } else {
-        emailService = true
-        console.log('✅ Email сервис доступен')
-      }
-    } catch (emailError) {
-      console.error('Ошибка при тесте email:', emailError)
-    }
+  return NextResponse.json({ disabled: true, reason: 'static-mode' }, { status: 501 })
+}
 
     return NextResponse.json({
       success: true,

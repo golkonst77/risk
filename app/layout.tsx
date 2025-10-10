@@ -5,7 +5,6 @@ import "./globals.css"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ContactForm } from "@/components/contact-form"
-import { HiddenAdminAccess } from "@/components/hidden-admin-access"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "sonner"
 import { YandexMetrica } from "@/components/yandex-metrica"
@@ -35,7 +34,6 @@ export default function RootLayout({
           {children}
           <Footer />
           <ContactForm />
-          <HiddenAdminAccess />
           <Toaster />
           <SonnerToaster position="top-right" />
       </body>
