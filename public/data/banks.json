@@ -1,0 +1,57 @@
+{
+  "version": "2025-10-11",
+  "lastUpdate": "2025-10-11T00:00:00Z",
+  "source": "nalog.gov.ru",
+  "count": 8,
+  "data": [
+    {
+      "bic": "044525974",
+      "name": "Тинькофф Банк",
+      "website": "https://www.tinkoff.ru/business/ausn/",
+      "onlineApplication": true
+    },
+    {
+      "bic": "044525225",
+      "name": "Сбербанк",
+      "website": "https://www.sberbank.ru/ru/s_m_business/pro/ausn",
+      "onlineApplication": true
+    },
+    {
+      "bic": "044525593",
+      "name": "Точка (ФК Открытие)",
+      "website": "https://tochka.com/ausn/",
+      "onlineApplication": true
+    },
+    {
+      "bic": "044525999",
+      "name": "Альфа-Банк",
+      "website": "https://alfabank.ru/sme/ausn/",
+      "onlineApplication": true
+    },
+    {
+      "bic": "044525411",
+      "name": "Модульбанк",
+      "website": "https://modulbank.ru/ausn",
+      "onlineApplication": true
+    },
+    {
+      "bic": "044525700",
+      "name": "Банк Восточный",
+      "website": "https://vostbank.ru/business/ausn/",
+      "onlineApplication": false
+    },
+    {
+      "bic": "044525545",
+      "name": "Совкомбанк",
+      "website": "https://sovcombank.ru/business/ausn",
+      "onlineApplication": true
+    },
+    {
+      "bic": "044525555",
+      "name": "Промсвязьбанк",
+      "website": "https://www.psbank.ru/Business/Ausn",
+      "onlineApplication": false
+    }
+  ]
+}
+

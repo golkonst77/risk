@@ -17,7 +17,6 @@ import { ReCAPTCHAComponent } from "./recaptcha"
 import { useRouter, usePathname } from "next/navigation"
 import { useHomepageSections } from "@/hooks/use-homepage-sections"
 import { useDeviceType } from "@/hooks/use-device-type"
-import { VersionBadge } from "./version-badge"
 
 const MENU_ITEMS = [
   { id: 'technologies', title: 'Инструкции по АУСН', href: '/#technologies', isAnchor: true },
@@ -78,7 +77,7 @@ export const Header = () => {
         key={item.id}
         href={item.href}
         onClick={handleMenuClick(item)}
-        className="rounded-lg px-4 py-2 font-medium bg-gray-100 text-gray-800 transition-colors hover:bg-gray-200 hover:text-blue-700 shadow-sm"
+        className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-800 bg-gray-100 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm whitespace-nowrap"
       >
         {item.title}
       </Link>
@@ -87,15 +86,15 @@ export const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
+      <div className="w-full px-6 flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
         <div className="flex items-center">
           <Logo />
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:block">
-          <ul className="flex items-center gap-2">
+        <nav className="hidden lg:block flex-1 mx-6">
+          <ul className="flex items-center justify-center gap-2">
             {visibleMenuItems.map(renderMenuItem)}
           </ul>
         </nav>
@@ -110,37 +109,23 @@ export const Header = () => {
         </button>
 
         {/* Right side widgets */}
-        <div className="hidden lg:flex items-center space-x-6">
-          {/* Быстрые контакты: телефон, Telegram, VK */}
-          <div className="flex items-center space-x-4">
-            <a
-              href={`tel:${settings?.phone?.replace(/\s/g, '') || '+79533301777'}`}
-              className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
-            >
-              <Phone className="h-4 w-4" />
-              <span className="hidden xl:inline">{settings?.phone || '+7953 330-17-77'}</span>
-            </a>
-            <a
-              href="https://t.me/prostoburo"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span className="hidden xl:inline">Telegram</span>
-            </a>
-          </div>
+        <div className="hidden lg:flex items-center gap-3">
+          {/* Контакты: телефон */}
+          <a
+            href={`tel:${settings?.phone?.replace(/\s/g, '') || '+79533301777'}`}
+            className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 text-gray-700 hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm"
+            title={settings?.phone || '+7 (953) 330-17-77'}
+          >
+            <Phone className="h-5 w-5" />
+          </a>
 
-          {/* CTA Button and Version */}
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={handleCruiseClick}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
-            >
-              Получить скидку
-            </Button>
-            <VersionBadge />
-          </div>
+          {/* CTA Button */}
+          <Button
+            onClick={handleCruiseClick}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+          >
+            Получить скидку
+          </Button>
         </div>
       </div>
 

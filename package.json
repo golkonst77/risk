@@ -9,7 +9,8 @@
     "start": "next start",
     "version:patch": "node scripts/update-version.cjs patch",
     "version:minor": "node scripts/update-version.cjs minor",
-    "version:major": "node scripts/update-version.cjs major"
+    "version:major": "node scripts/update-version.cjs major",
+    "update-data": "node scripts/copy-parser-data.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
