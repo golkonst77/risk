@@ -1,0 +1,5 @@
+#!/bin/sh
+# Prefix commit message with [v<version>] from public/version.json via wrapper
+node scripts/commit-msg-wrapper.cjs "$1" || exit 0
+
+

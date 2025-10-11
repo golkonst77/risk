@@ -7,8 +7,8 @@ const path = require('path')
 const args = process.argv.slice(2)
 const versionType = args[0] || 'patch' // patch, minor, major
 
-// Читаем текущую версию
-const versionPath = path.join(process.cwd(), 'version.json')
+// Читаем текущую версию из public/version.json
+const versionPath = path.join(process.cwd(), 'public', 'version.json')
 let versionData
 
 try {
