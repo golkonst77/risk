@@ -112,26 +112,30 @@ export default function BanksPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {banksData?.data.map((bank, index) => (
-              <Card key={bank.inn} className="hover:shadow-lg transition-shadow duration-300">
+              <Card 
+                key={bank.inn} 
+                className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 hover:border-blue-400 hover:shadow-2xl hover:scale-105 transition-all duration-300 shadow-lg"
+                style={{ boxShadow: '0 10px 30px -10px rgba(59, 130, 246, 0.3)' }}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <Badge variant="outline" className="mb-2">
+                      <Badge variant="outline" className="mb-2 bg-white/80 border-blue-300">
                         #{index + 1}
                       </Badge>
-                      <CardTitle className="text-lg leading-tight">
+                      <CardTitle className="text-lg leading-tight text-gray-800">
                         {bank.name}
                       </CardTitle>
                     </div>
                     <Building2 className="h-8 w-8 text-blue-600 flex-shrink-0 ml-2" />
                   </div>
-                  <CardDescription className="flex items-center gap-2 text-xs">
+                  <CardDescription className="flex items-center gap-2 text-xs text-gray-600">
                     <Calendar className="h-3 w-3" />
                     В реестре с {bank.dateAdded}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-sm text-gray-700">
                     <div className="flex justify-between">
                       <span className="text-gray-600">ИНН:</span>
                       <span className="font-mono font-medium">{bank.inn}</span>

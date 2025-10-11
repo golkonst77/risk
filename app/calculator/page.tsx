@@ -7,24 +7,17 @@ export default function CalculatorPage() {
       <Head>
         <title>Калькулятор | ПростоБюро</title>
       </Head>
-      <div 
-        id="calculator-page" 
+      <div
+        id="calculator-page"
         className="min-h-screen relative overflow-hidden"
-        style={{
-          backgroundImage: 'url("/euro-currency-euro-cash-closeup-euro-bancnotes-background.jpg")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed'
-        }}
       >
-        {/* Тёмный overlay для читаемости */}
-        <div 
-          className="absolute inset-0 z-0" 
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
+        <div
+          className="absolute inset-0 -z-10"
+          style={{
+            background: "radial-gradient(80% 60% at 20% 10%, rgba(99,102,241,0.25) 0%, rgba(99,102,241,0) 60%), radial-gradient(70% 50% at 80% 0%, rgba(14,165,233,0.25) 0%, rgba(14,165,233,0) 60%), linear-gradient(180deg, #0b1020 0%, #141a35 50%, #1b2147 100%)"
+          }}
         />
-        
-        {/* Контент калькулятора */}
+
         <div className="relative z-10">
           <Calculator />
         </div>

@@ -19,14 +19,13 @@ import { useHomepageSections } from "@/hooks/use-homepage-sections"
 import { useDeviceType } from "@/hooks/use-device-type"
 
 const MENU_ITEMS = [
-  { id: 'technologies', title: 'Инструкции по АУСН', href: '/#technologies', isAnchor: true },
-  { id: 'pricing', title: 'Переход на АУСН', href: '/#pricing', isAnchor: true },
+  { id: 'technologies', title: 'Инструкции', href: '/#technologies', isAnchor: true },
   { id: 'calculator', title: 'Калькулятор', href: '/#calculator', isAnchor: true },
-  { id: 'regions', title: 'Регионы АУСН', href: '/regions', isAnchor: false },
-  { id: 'banks', title: 'Банки для АУСН', href: '/banks', isAnchor: false },
+  { id: 'regions', title: 'Регионы', href: '/regions', isAnchor: false },
+  { id: 'banks', title: 'Банки', href: '/banks', isAnchor: false },
   { id: 'news', title: 'Новости', href: '/#news', isAnchor: true },
-  { id: 'services', title: 'Юридическая поддержка', href: '/#services', isAnchor: true },
-  { id: 'faq', title: 'FAQ по АУСН', href: '/#faq', isAnchor: true },
+  { id: 'support', title: 'Поддержка', href: '/support', isAnchor: false },
+  { id: 'faq', title: 'FAQ', href: '/#faq', isAnchor: true },
   { id: 'contacts', title: 'Контакты', href: '/#contacts', isAnchor: true },
 ]
 
@@ -78,7 +77,7 @@ export const Header = () => {
         key={item.id}
         href={item.href}
         onClick={handleMenuClick(item)}
-        className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-gray-800 bg-gray-100 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm whitespace-nowrap"
+        className="inline-flex items-center justify-center px-5 py-3 text-base font-semibold text-gray-800 bg-gray-100 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm whitespace-nowrap"
       >
         {item.title}
       </Link>
@@ -125,7 +124,7 @@ export const Header = () => {
             onClick={handleCruiseClick}
             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold px-6 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
           >
-            Получить скидку
+            Получить консультацию
           </Button>
         </div>
       </div>

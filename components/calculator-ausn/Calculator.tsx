@@ -1,12 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Calculator as CalculatorIcon } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Calculator as CalculatorIcon, TrendingDown, TrendingUp, DollarSign, AlertCircle } from "lucide-react"
 import { CalculatorForm } from "./CalculatorForm"
-import { CalculatorResults } from "./CalculatorResults"
-import { ComparisonTable } from "./ComparisonTable"
-import { EligibilityChecker } from "./EligibilityChecker"
+import { DashboardSummary } from "./DashboardSummary"
+import { DashboardChartsNew } from "./DashboardChartsNew"
+import { DashboardComparisonTable } from "./DashboardComparisonTable"
+import { DashboardLimits } from "./DashboardLimits"
+import { DashboardAdvice } from "./DashboardAdvice"
 import type { CalculatorFormData, ComparisonResults, EligibilityCheck } from "./types"
 import {
   calculateUSN6,
@@ -191,75 +193,92 @@ export function Calculator() {
   }
 
   return (
-    <section id="calculator" className="py-16 px-4 bg-gray-50">
-      <div className="container mx-auto max-w-7xl">
-        {/* Заголовок */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
-            <CalculatorIcon className="h-8 w-8 text-blue-600" />
+    <section id="calculator" className="min-h-screen" style={{ backgroundColor: '#FAFAFF' }}>
+      {/* Hero Section */}
+      <div className="relative py-16 md:py-20 bg-gradient-to-r from-blue-600 to-purple-600 overflow-hidden">
+        <div className="absolute inset-0 z-0 opacity-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent)]"></div>
+        </div>
+        <div className="container mx-auto px-4 relative z-10 text-center text-white">
+          <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white/20 backdrop-blur-sm mb-6 shadow-xl">
+            <CalculatorIcon className="h-8 w-8 md:h-10 md:w-10 text-white" />
           </div>
-          <h2 className="text-4xl font-bold mb-4">
+          <h1 className="text-3xl md:text-5xl font-extrabold leading-tight mb-4 drop-shadow-lg">
             Калькулятор сравнения налоговых режимов
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          </h1>
+          <p className="text-base md:text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
             Сравните вашу текущую систему налогообложения с АУСН и узнайте, сколько вы можете сэкономить
           </p>
         </div>
+      </div>
 
-        {/* Форма калькулятора */}
-        <div id="calculator-form" className="mb-12">
-          <CalculatorForm
-            onSubmit={handleCalculate}
-            initialData={formData || undefined}
-          />
+      <div className="container mx-auto max-w-7xl py-8 md:py-12 px-4">
+        {/* Row 1: Форма + Информер лимитов */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="lg:col-span-2">
+            <Card className="rounded-3xl bg-white/95 border border-slate-200 shadow-[0_10px_30px_rgba(2,6,23,0.06)]">
+              <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+                <CardTitle className="text-2xl flex items-center gap-2">
+                  <DollarSign className="h-6 w-6 text-blue-600" />
+                  Основные данные
+                </CardTitle>
+                <CardDescription>
+                  Заполните информацию о вашем бизнесе для расчета
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <CalculatorForm
+                  onSubmit={handleCalculate}
+                  initialData={formData || undefined}
+                  onChange={(data) => {
+                    setFormData(data)
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-1 lg:sticky lg:top-6 h-fit">
+            <DashboardLimits
+              eligibility={eligibility}
+              revenue={formData?.revenue || 0}
+              employees={formData?.employees || 0}
+              expenses={formData?.expenses || 0}
+              region={formData?.region}
+            />
+          </div>
         </div>
 
-        {/* Результаты */}
+        {/* Результаты (показываем после расчёта) */}
         {results && eligibility && formData && (
-          <div id="calculator-results" className="space-y-8">
-            {/* Проверка соответствия */}
-            <EligibilityChecker
-              eligibility={eligibility}
-              revenue={formData.revenue}
-              employees={formData.employees}
+          <div id="calculator-results" className="space-y-6">
+            {/* Row 2: Итоговая аналитика */}
+            <DashboardSummary results={results} />
+
+            {/* Row 3: Графики и диаграммы */}
+            <DashboardChartsNew 
+              results={results} 
+              formData={{
+                revenue: formData.revenue,
+                expenses: formData.expenses,
+                employees: formData.employees
+              }}
             />
 
-            {/* Если соответствует лимитам - показываем результаты */}
-            {eligibility.eligible && (
-              <>
-                {/* Карточки результатов */}
-                <CalculatorResults
-                  results={results}
-                  onConsultation={handleConsultation}
-                  onDownloadPDF={handleDownloadPDF}
-                />
+            {/* Row 4: Таблица сравнения */}
+            <DashboardComparisonTable results={results} />
 
-                {/* Таблица сравнения */}
-                <ComparisonTable results={results} />
+            {/* Row 5: Юридические советы */}
+            <DashboardAdvice results={results} eligibility={eligibility} />
 
-                {/* Кнопка нового расчета */}
-                <div className="flex justify-center pt-6">
-                  <button
-                    onClick={handleReset}
-                    className="px-6 py-3 text-blue-600 hover:text-blue-700 font-medium hover:underline"
-                  >
-                    ← Сделать новый расчет
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* Если НЕ соответствует - показываем только проверку */}
-            {!eligibility.eligible && (
-              <div className="flex justify-center pt-6">
-                <button
-                  onClick={handleReset}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-                >
-                  Изменить данные
-                </button>
-              </div>
-            )}
+            {/* Кнопка нового расчёта */}
+            <div className="flex justify-center pt-6">
+              <button
+                onClick={handleReset}
+                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 font-semibold shadow-lg hover:shadow-xl transition-all"
+              >
+                ← Сделать новый расчет
+              </button>
+            </div>
           </div>
         )}
       </div>

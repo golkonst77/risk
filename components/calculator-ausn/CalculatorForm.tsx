@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
@@ -16,9 +17,10 @@ import { AUSN_CONFIG } from "./calculator-config"
 interface CalculatorFormProps {
   onSubmit: (data: CalculatorFormData) => void
   initialData?: Partial<CalculatorFormData>
+  onChange?: (data: CalculatorFormData) => void
 }
 
-export function CalculatorForm({ onSubmit, initialData }: CalculatorFormProps) {
+export function CalculatorForm({ onSubmit, initialData, onChange }: CalculatorFormProps) {
   const [formData, setFormData] = useState<CalculatorFormData>({
     businessType: initialData?.businessType || 'IP',
     currentTaxSystem: initialData?.currentTaxSystem || 'USN_INCOME',
@@ -32,8 +34,22 @@ export function CalculatorForm({ onSubmit, initialData }: CalculatorFormProps) {
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showValidation, setShowValidation] = useState(false)
+  const [regions, setRegions] = useState<Array<{ code: string; name: string }>>([])
 
-  // Форматирование числа с пробелами
+  useEffect(() => {
+    const loadRegions = async () => {
+      try {
+        const res = await fetch(`/data/regions.json?v=${Date.now()}`)
+        if (res.ok) {
+          const json = await res.json()
+          if (Array.isArray(json?.data)) setRegions(json.data)
+        }
+      } catch {}
+    }
+    loadRegions()
+  }, [])
+
+  // Форматирование числа с пробелами (в рублях)
   const formatNumber = (value: number): string => {
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
   }
@@ -43,17 +59,40 @@ export function CalculatorForm({ onSubmit, initialData }: CalculatorFormProps) {
     return parseFloat(value.replace(/\s/g, '')) || 0
   }
 
-  // Обработка изменения числового поля
+  // Универсальный апдейтер локального state + оповещение родителя
+  const applyFormUpdate = (next: CalculatorFormData) => {
+    setFormData(next)
+    if (onChange) onChange(next)
+  }
+
+  // Обработка изменения числового поля (в рублях)
   const handleNumberChange = (field: keyof CalculatorFormData, value: string) => {
     let numValue = parseNumber(value)
     
-    // Для доходов, расходов и зарплаты конвертируем тысячи в рубли
-    if (field === 'revenue' || field === 'expenses' || field === 'avgSalary') {
-      numValue = numValue * 1000
+    if (field === 'revenue') {
+      // При изменении дохода ограничиваем расходы сверху новым доходом
+      let clampedExpenses = 0
+      applyFormUpdate(({...formData, revenue: numValue, expenses: (clampedExpenses = Math.min(formData.expenses, numValue))}))
+      validateField('revenue', numValue)
+      validateField('expenses', clampedExpenses)
+    } else {
+      applyFormUpdate({ ...formData, [field]: numValue } as CalculatorFormData)
+      validateField(field, numValue)
     }
-    
-    setFormData(prev => ({ ...prev, [field]: numValue }))
-    validateField(field, numValue)
+  }
+
+  // Обработка изменения через слайдер (значение в рублях или целое)
+  const handleSliderChange = (field: keyof CalculatorFormData, values: number[]) => {
+    const numValue = values[0]
+    if (field === 'revenue') {
+      let clampedExpenses = 0
+      applyFormUpdate({ ...formData, revenue: numValue, expenses: (clampedExpenses = Math.min(formData.expenses, numValue)) })
+      validateField('revenue', numValue)
+      validateField('expenses', clampedExpenses)
+    } else {
+      applyFormUpdate({ ...formData, [field]: numValue } as CalculatorFormData)
+      validateField(field, numValue)
+    }
   }
 
   // Валидация отдельного поля
@@ -157,72 +196,110 @@ export function CalculatorForm({ onSubmit, initialData }: CalculatorFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Основные данные</CardTitle>
-          <CardDescription>
-            Заполните информацию о вашем бизнесе для расчета
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
           {/* Тип бизнеса */}
           <div className="space-y-3">
-            <Label>Тип бизнеса</Label>
+            <Label className="text-base font-semibold text-gray-900">Тип бизнеса</Label>
             <RadioGroup
               value={formData.businessType}
               onValueChange={(value: BusinessType) =>
                 setFormData(prev => ({ ...prev, businessType: value }))
               }
-              className="flex gap-4"
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
             >
-              <div className="flex items-center space-x-2 flex-1">
+              <div className={`flex items-center space-x-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                formData.businessType === 'IP' 
+                  ? 'border-blue-600 bg-blue-50' 
+                  : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+              }`}>
                 <RadioGroupItem value="IP" id="ip" />
-                <Label htmlFor="ip" className="flex items-center gap-2 cursor-pointer">
-                  <User className="h-4 w-4" />
-                  Индивидуальный предприниматель (ИП)
+                <Label htmlFor="ip" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <User className="h-5 w-5 text-blue-600" />
+                  <span className="font-medium">Индивидуальный предприниматель (ИП)</span>
                 </Label>
               </div>
-              <div className="flex items-center space-x-2 flex-1">
+              <div className={`flex items-center space-x-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                formData.businessType === 'OOO' 
+                  ? 'border-blue-600 bg-blue-50' 
+                  : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+              }`}>
                 <RadioGroupItem value="OOO" id="ooo" />
-                <Label htmlFor="ooo" className="flex items-center gap-2 cursor-pointer">
-                  <Building2 className="h-4 w-4" />
-                  Общество с ограниченной ответственностью (ООО)
+                <Label htmlFor="ooo" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <Building2 className="h-5 w-5 text-blue-600" />
+                  <span className="font-medium">Общество с ограниченной ответственностью (ООО)</span>
                 </Label>
               </div>
             </RadioGroup>
           </div>
 
           {/* Текущая система налогообложения */}
-          <div className="space-y-2">
-            <Label htmlFor="taxSystem">Текущая система налогообложения</Label>
-            <Select
+          <div className="space-y-3">
+            <Label>Текущая система налогообложения</Label>
+            <RadioGroup
               value={formData.currentTaxSystem}
               onValueChange={(value: TaxSystem) =>
-                setFormData(prev => ({ ...prev, currentTaxSystem: value }))
+                applyFormUpdate({ ...formData, currentTaxSystem: value })
               }
+              className="grid grid-cols-1 md:grid-cols-3 gap-4"
             >
-              <SelectTrigger id="taxSystem">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="USN_INCOME">{getTaxSystemName('USN_INCOME')}</SelectItem>
-                <SelectItem value="USN_INCOME_EXPENSES">{getTaxSystemName('USN_INCOME_EXPENSES')}</SelectItem>
-                <SelectItem value="OSNO">{getTaxSystemName('OSNO')}</SelectItem>
-              </SelectContent>
-            </Select>
+              <div className={`flex items-center space-x-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                formData.currentTaxSystem === 'USN_INCOME' 
+                  ? 'border-blue-600 bg-blue-50' 
+                  : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+              }`}>
+                <RadioGroupItem value="USN_INCOME" id="ts_usn6" />
+                <Label htmlFor="ts_usn6" className="cursor-pointer flex-1">
+                  УСН "Доходы" (6%)
+                </Label>
+              </div>
+
+              <div className={`flex items-center space-x-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                formData.currentTaxSystem === 'USN_INCOME_EXPENSES' 
+                  ? 'border-blue-600 bg-blue-50' 
+                  : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+              }`}>
+                <RadioGroupItem value="USN_INCOME_EXPENSES" id="ts_usn15" />
+                <Label htmlFor="ts_usn15" className="cursor-pointer flex-1">
+                  УСН "Доходы минус расходы" (15%)
+                </Label>
+              </div>
+
+              <div className={`flex items-center space-x-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                formData.currentTaxSystem === 'OSNO' 
+                  ? 'border-blue-600 bg-blue-50' 
+                  : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+              }`}>
+                <RadioGroupItem value="OSNO" id="ts_osno" />
+                <Label htmlFor="ts_osno" className="cursor-pointer flex-1">
+                  ОСНО
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
 
           {/* Годовой доход */}
           <div className="space-y-2">
-            <Label htmlFor="revenue">Годовой доход (оборот), тыс. руб.</Label>
+            <Label htmlFor="revenue">Годовой доход (оборот), руб.</Label>
             <Input
               id="revenue"
               type="text"
-              value={formData.revenue > 0 ? formatNumber(formData.revenue / 1000) : ''}
+              value={formData.revenue > 0 ? formatNumber(formData.revenue) : ''}
               onChange={(e) => handleNumberChange('revenue', e.target.value)}
-              placeholder="Например: 5 000"
+              placeholder="Например: 5 000 000"
               className={errors.revenue ? 'border-red-500' : ''}
             />
+            <div className="pt-1">
+              <Slider
+                value={[Math.min(formData.revenue, AUSN_CONFIG.limits.maxRevenue)]}
+                min={0}
+                max={AUSN_CONFIG.limits.maxRevenue}
+                step={100_000}
+                onValueChange={(v) => handleSliderChange('revenue', v)}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>0</span>
+                <span>60 000 000</span>
+              </div>
+            </div>
             {errors.revenue && showValidation && (
               <p className="text-sm text-red-500">{errors.revenue}</p>
             )}
@@ -233,15 +310,28 @@ export function CalculatorForm({ onSubmit, initialData }: CalculatorFormProps) {
 
           {/* Годовые расходы */}
           <div className="space-y-2">
-            <Label htmlFor="expenses">Годовые расходы, тыс. руб.</Label>
+            <Label htmlFor="expenses">Годовые расходы, руб.</Label>
             <Input
               id="expenses"
               type="text"
-              value={formData.expenses > 0 ? formatNumber(formData.expenses / 1000) : ''}
+              value={formData.expenses > 0 ? formatNumber(formData.expenses) : ''}
               onChange={(e) => handleNumberChange('expenses', e.target.value)}
-              placeholder="Например: 2 000"
+              placeholder="Например: 2 000 000"
               className={errors.expenses ? 'border-red-500' : ''}
             />
+            <div className="pt-1">
+              <Slider
+                value={[Math.min(formData.expenses, Math.min(formData.revenue || AUSN_CONFIG.limits.maxRevenue, AUSN_CONFIG.limits.maxRevenue))]}
+                min={0}
+                max={Math.min(formData.revenue || AUSN_CONFIG.limits.maxRevenue, AUSN_CONFIG.limits.maxRevenue)}
+                step={100_000}
+                onValueChange={(v) => handleSliderChange('expenses', v)}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>0</span>
+                <span>{formatNumber(Math.min(formData.revenue || AUSN_CONFIG.limits.maxRevenue, AUSN_CONFIG.limits.maxRevenue))}</span>
+              </div>
+            </div>
             {errors.expenses && showValidation && (
               <p className="text-sm text-red-500">{errors.expenses}</p>
             )}
@@ -264,6 +354,19 @@ export function CalculatorForm({ onSubmit, initialData }: CalculatorFormProps) {
               placeholder="0"
               className={errors.employees ? 'border-red-500' : ''}
             />
+            <div className="pt-1">
+              <Slider
+                value={[Math.min(formData.employees, AUSN_CONFIG.limits.maxEmployees)]}
+                min={0}
+                max={AUSN_CONFIG.limits.maxEmployees}
+                step={1}
+                onValueChange={(v) => handleSliderChange('employees', v)}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>0</span>
+                <span>{AUSN_CONFIG.limits.maxEmployees}</span>
+              </div>
+            </div>
             {errors.employees && showValidation && (
               <p className="text-sm text-red-500">{errors.employees}</p>
             )}
@@ -272,15 +375,28 @@ export function CalculatorForm({ onSubmit, initialData }: CalculatorFormProps) {
           {/* Средняя зарплата */}
           {formData.employees > 0 && (
             <div className="space-y-2">
-              <Label htmlFor="avgSalary">Средняя зарплата сотрудника (в месяц), тыс. руб.</Label>
+              <Label htmlFor="avgSalary">Средняя зарплата сотрудника (в месяц), руб.</Label>
               <Input
                 id="avgSalary"
                 type="text"
-                value={formData.avgSalary > 0 ? formatNumber(formData.avgSalary / 1000) : ''}
+                value={formData.avgSalary > 0 ? formatNumber(formData.avgSalary) : ''}
                 onChange={(e) => handleNumberChange('avgSalary', e.target.value)}
-                placeholder="Например: 50"
+                placeholder="Например: 50 000"
                 className={errors.avgSalary ? 'border-red-500' : ''}
               />
+              <div className="pt-1">
+                <Slider
+                  value={[Math.min(formData.avgSalary, 250_000)]}
+                  min={0}
+                  max={250_000}
+                  step={1_000}
+                  onValueChange={(v) => handleSliderChange('avgSalary', v)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>0</span>
+                  <span>250 000</span>
+                </div>
+              </div>
               {errors.avgSalary && showValidation && (
                 <p className="text-sm text-red-500">{errors.avgSalary}</p>
               )}
@@ -290,7 +406,26 @@ export function CalculatorForm({ onSubmit, initialData }: CalculatorFormProps) {
             </div>
           )}
 
-          {/* Подтверждение права на АУСН */}
+          {/* Регион применения */}
+          <div className="space-y-2">
+            <Label htmlFor="region">Регион применения</Label>
+            <Select
+              value={formData.region}
+              onValueChange={(value: string) => applyFormUpdate({ ...formData, region: value } as CalculatorFormData)}
+            >
+              <SelectTrigger id="region">
+                <SelectValue placeholder="Выберите регион" />
+              </SelectTrigger>
+              <SelectContent>
+                {regions.map((r) => (
+                  <SelectItem key={r.code} value={r.name}>{r.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Список загружается из `/data/regions.json`</p>
+          </div>
+
+          {/* Подтверждение права на АУСН (перемещено вниз) */}
           <div className="space-y-3">
             <Alert>
               <AlertCircle className="h-4 w-4" />
@@ -310,7 +445,7 @@ export function CalculatorForm({ onSubmit, initialData }: CalculatorFormProps) {
                 id="confirmedEligibility"
                 checked={formData.confirmedEligibility}
                 onCheckedChange={(checked) =>
-                  setFormData(prev => ({ ...prev, confirmedEligibility: checked === true }))
+                  applyFormUpdate({ ...formData, confirmedEligibility: checked === true } as CalculatorFormData)
                 }
               />
               <Label
@@ -324,13 +459,14 @@ export function CalculatorForm({ onSubmit, initialData }: CalculatorFormProps) {
               <p className="text-sm text-red-500">{errors.confirmedEligibility}</p>
             )}
           </div>
-        </CardContent>
-      </Card>
-
       {/* Кнопка отправки */}
-      <div className="flex justify-end">
-        <Button type="submit" size="lg" className="min-w-[200px]">
-          Рассчитать налоги
+      <div className="flex justify-center pt-4">
+        <Button 
+          type="submit" 
+          size="lg" 
+          className="min-w-[250px] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-6 text-lg shadow-lg hover:shadow-xl transition-all"
+        >
+          Рассчитать налоги →
         </Button>
       </div>
     </form>

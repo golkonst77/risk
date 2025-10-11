@@ -127,8 +127,8 @@ export function FAQ() {
                   {openItems.includes(index) && (
                     <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 md:px-6 py-4 md:py-6 rounded-b-xl">
                       <p className="text-white leading-relaxed text-sm md:text-base">
-                        {item.answer}
-                      </p>
+                          {item.answer}
+                        </p>
                     </div>
                   )}
                 </CardContent>
@@ -161,7 +161,7 @@ export function FAQ() {
                 onClick={openContactForm}
                 className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-colors font-medium"
               >
-                Получить скидку
+                Получить консультацию
               </button>
             </div>
           </div>
@@ -169,4 +169,4 @@ export function FAQ() {
       </div>
     </section>
   )
-}
+} 
