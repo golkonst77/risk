@@ -1,57 +1,74 @@
 {
   "version": "2025-10-11",
-  "lastUpdate": "2025-10-11T00:00:00Z",
+  "lastUpdate": "2025-10-11T12:14:16.077Z",
   "source": "nalog.gov.ru",
-  "count": 8,
+  "count": 11,
   "data": [
     {
-      "bic": "044525974",
-      "name": "Тинькофф Банк",
-      "website": "https://www.tinkoff.ru/business/ausn/",
-      "onlineApplication": true
+      "inn": "2204000595",
+      "ogrn": "1022200525841",
+      "name": "АО КБ «Модульбанк»",
+      "dateAdded": "23.06.2022"
     },
     {
-      "bic": "044525225",
-      "name": "Сбербанк",
-      "website": "https://www.sberbank.ru/ru/s_m_business/pro/ausn",
-      "onlineApplication": true
+      "inn": "7707083893",
+      "ogrn": "1027700132195",
+      "name": "ПАО Сбербанк",
+      "dateAdded": "27.06.2022"
     },
     {
-      "bic": "044525593",
-      "name": "Точка (ФК Открытие)",
-      "website": "https://tochka.com/ausn/",
-      "onlineApplication": true
+      "inn": "7728168971",
+      "ogrn": "1027700067328",
+      "name": "АО «Альфа-Банк»",
+      "dateAdded": "27.06.2022"
     },
     {
-      "bic": "044525999",
-      "name": "Альфа-Банк",
-      "website": "https://alfabank.ru/sme/ausn/",
-      "onlineApplication": true
+      "inn": "7744000912",
+      "ogrn": "1027739019142",
+      "name": "ПАО «Промсвязьбанк»",
+      "dateAdded": "28.06.2022"
     },
     {
-      "bic": "044525411",
-      "name": "Модульбанк",
-      "website": "https://modulbank.ru/ausn",
-      "onlineApplication": true
+      "inn": "7710140679",
+      "ogrn": "1027739642281",
+      "name": "АО «ТБанк»",
+      "dateAdded": "26.07.2022"
     },
     {
-      "bic": "044525700",
-      "name": "Банк Восточный",
-      "website": "https://vostbank.ru/business/ausn/",
-      "onlineApplication": false
+      "inn": "7702070139",
+      "ogrn": "1027739609391",
+      "name": "ПАО Банк ВТБ",
+      "dateAdded": "10.08.2022"
     },
     {
-      "bic": "044525545",
-      "name": "Совкомбанк",
-      "website": "https://sovcombank.ru/business/ausn",
-      "onlineApplication": true
+      "inn": "1653001805",
+      "ogrn": "1021600000124",
+      "name": "ПАО Акционерный коммерческий банк\n                                                    «АК БАРС»",
+      "dateAdded": "03.11.2022"
     },
     {
-      "bic": "044525555",
-      "name": "Промсвязьбанк",
-      "website": "https://www.psbank.ru/Business/Ausn",
-      "onlineApplication": false
+      "inn": "6027006032",
+      "ogrn": "1026000001796",
+      "name": "ООО «БЛАНК БАНК»",
+      "dateAdded": "09.01.2023"
+    },
+    {
+      "inn": "9721194461",
+      "ogrn": "1237700005157",
+      "name": "ООО «Банк Точка»",
+      "dateAdded": "13.03.2023"
+    },
+    {
+      "inn": "7725114488",
+      "ogrn": "1027700342890",
+      "name": "АО «Россельхозбанк»",
+      "dateAdded": "24.04.2023"
+    },
+    {
+      "inn": "7733043350",
+      "ogrn": "1027739296584",
+      "name": "ПАО «СДМ-Банк»",
+      "dateAdded": "12.08.2024"
     }
   ]
 }
-
