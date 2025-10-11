@@ -4,7 +4,7 @@ import { join } from 'path'
 
 export async function GET() {
   try {
-    const versionPath = join(process.cwd(), 'version.json')
+    const versionPath = join(process.cwd(), 'public', 'version.json')
     const versionData = readFileSync(versionPath, 'utf8')
     const version = JSON.parse(versionData)
     
