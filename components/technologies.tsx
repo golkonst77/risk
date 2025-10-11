@@ -133,47 +133,6 @@ export function Technologies() {
             </Card>
           ))}
         </div>
-
-        {/* FAQ Preview */}
-        <div className="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
-          <h3 className="text-2xl font-bold mb-4 text-center">Популярные вопросы по АУСН</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Кто может перейти на АУСН?</h4>
-              <p className="text-sm text-blue-100">
-                Малый бизнес в пилотных регионах с доходом до 60 млн руб. и штатом до 5 человек
-              </p>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Какие налоги заменяет АУСН?</h4>
-              <p className="text-sm text-blue-100">
-                НДС, налог на прибыль (для ООО) или НДФЛ (для ИП), страховые взносы
-              </p>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Когда можно подать заявление?</h4>
-              <p className="text-sm text-blue-100">
-                Для новых ИП/ООО — в течение 30 дней после регистрации. Для действующих — до 31 декабря
-              </p>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Нужна ли отчётность на АУСН?</h4>
-              <p className="text-sm text-blue-100">
-                Декларации не нужны! Банк сам передаёт данные в налоговую. Только уведомления о работниках
-              </p>
-            </div>
-          </div>
-          <div className="text-center">
-            <Button
-              variant="secondary"
-              size="lg"
-              onClick={() => handleClick('/#faq')}
-              className="bg-white text-blue-600 hover:bg-blue-50 font-semibold"
-            >
-              Все вопросы и ответы
-            </Button>
-          </div>
-        </div>
       </div>
     </section>
   )

@@ -7,25 +7,13 @@
     "desktop": "draft",
     "mobile": "draft"
   },
-  "services": {
-    "desktop": "published",
-    "mobile": "published"
-  },
   "calculator": {
-    "desktop": "published",
-    "mobile": "draft"
-  },
-  "pricing": {
     "desktop": "published",
     "mobile": "draft"
   },
   "reviews": {
     "desktop": "published",
     "mobile": "published"
-  },
-  "guarantees": {
-    "desktop": "published",
-    "mobile": "draft"
   },
   "faq": {
     "desktop": "published",
@@ -40,10 +28,6 @@
     "mobile": "published"
   },
   "technologies": {
-    "desktop": "published",
-    "mobile": "draft"
-  },
-  "ai-documents": {
     "desktop": "published",
     "mobile": "draft"
   }

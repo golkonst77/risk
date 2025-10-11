@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Building2, CheckCircle2, Calendar, Info } from "lucide-react"
+import { Building2, CheckCircle2, Calendar, Info, ChevronDown } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface Bank {
@@ -24,6 +24,15 @@ interface BanksData {
 export default function BanksPage() {
   const [banksData, setBanksData] = useState<BanksData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [openFaqItems, setOpenFaqItems] = useState<number[]>([])
+
+  const toggleFaqItem = (index: number) => {
+    setOpenFaqItems(prev =>
+      prev.includes(index)
+        ? prev.filter(i => i !== index)
+        : [...prev, index]
+    )
+  }
 
   useEffect(() => {
     const loadBanks = async () => {
@@ -146,58 +155,83 @@ export default function BanksPage() {
             <h2 className="text-3xl font-bold text-center mb-12">
               Часто задаваемые вопросы
             </h2>
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    Обязательно ли открывать новый счёт для АУСН?
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">
-                    Да, для применения АУСН необходимо иметь расчётный счёт в одном из уполномоченных банков. 
-                    Если у вас уже есть счёт в банке из списка, можно использовать его.
-                  </p>
+            <div className="space-y-4">
+              <Card className="border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 rounded-xl">
+                <CardContent className="p-0">
+                  <button
+                    onClick={() => toggleFaqItem(0)}
+                    className="w-full text-left p-4 md:p-6 flex items-start justify-between hover:bg-gray-50 transition-colors duration-200 group rounded-t-xl"
+                  >
+                    <span className="text-base md:text-lg font-medium text-gray-900 pr-4 leading-relaxed flex-1">
+                      Обязательно ли открывать новый счёт для АУСН?
+                    </span>
+                    <ChevronDown 
+                      className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 group-hover:text-blue-600 ${
+                        openFaqItems.includes(0) ? 'transform rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  
+                  {openFaqItems.includes(0) && (
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 md:px-6 py-4 md:py-6 rounded-b-xl">
+                      <p className="text-white leading-relaxed text-sm md:text-base">
+                        Да, для применения АУСН необходимо иметь расчётный счёт в одном из уполномоченных банков. 
+                        Если у вас уже есть счёт в банке из списка, можно использовать его.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    Можно ли работать с несколькими банками?
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">
-                    Нет, для применения АУСН все операции должны проходить через один расчётный счёт в уполномоченном банке.
-                  </p>
+              <Card className="border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 rounded-xl">
+                <CardContent className="p-0">
+                  <button
+                    onClick={() => toggleFaqItem(1)}
+                    className="w-full text-left p-4 md:p-6 flex items-start justify-between hover:bg-gray-50 transition-colors duration-200 group rounded-t-xl"
+                  >
+                    <span className="text-base md:text-lg font-medium text-gray-900 pr-4 leading-relaxed flex-1">
+                      Можно ли работать с несколькими банками?
+                    </span>
+                    <ChevronDown 
+                      className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 group-hover:text-blue-600 ${
+                        openFaqItems.includes(1) ? 'transform rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  
+                  {openFaqItems.includes(1) && (
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 md:px-6 py-4 md:py-6 rounded-b-xl">
+                      <p className="text-white leading-relaxed text-sm md:text-base">
+                        Нет, для применения АУСН все операции должны проходить через один расчётный счёт в уполномоченном банке.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    Как часто обновляется список банков?
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">
-                    Список банков автоматически обновляется каждое воскресенье в 03:00 с официального портала ФНС. 
-                    Последнее обновление: {banksData?.version}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    Что делать, если моего банка нет в списке?
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">
-                    Вам потребуется открыть счёт в одном из уполномоченных банков. Выбирайте банк с удобными условиями обслуживания и тарифами для вашего бизнеса.
-                  </p>
+              <Card className="border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 rounded-xl">
+                <CardContent className="p-0">
+                  <button
+                    onClick={() => toggleFaqItem(2)}
+                    className="w-full text-left p-4 md:p-6 flex items-start justify-between hover:bg-gray-50 transition-colors duration-200 group rounded-t-xl"
+                  >
+                    <span className="text-base md:text-lg font-medium text-gray-900 pr-4 leading-relaxed flex-1">
+                      Что делать, если моего банка нет в списке?
+                    </span>
+                    <ChevronDown 
+                      className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 group-hover:text-blue-600 ${
+                        openFaqItems.includes(2) ? 'transform rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  
+                  {openFaqItems.includes(2) && (
+                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 md:px-6 py-4 md:py-6 rounded-b-xl">
+                      <p className="text-white leading-relaxed text-sm md:text-base">
+                        Вам потребуется открыть счёт в одном из уполномоченных банков. Выбирайте банк с удобными условиями обслуживания и тарифами для вашего бизнеса.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

@@ -22,10 +22,11 @@ const MENU_ITEMS = [
   { id: 'technologies', title: 'Инструкции по АУСН', href: '/#technologies', isAnchor: true },
   { id: 'pricing', title: 'Переход на АУСН', href: '/#pricing', isAnchor: true },
   { id: 'calculator', title: 'Калькулятор', href: '/#calculator', isAnchor: true },
+  { id: 'regions', title: 'Регионы АУСН', href: '/regions', isAnchor: false },
   { id: 'banks', title: 'Банки для АУСН', href: '/banks', isAnchor: false },
   { id: 'news', title: 'Новости', href: '/#news', isAnchor: true },
   { id: 'services', title: 'Юридическая поддержка', href: '/#services', isAnchor: true },
-  { id: 'faq', title: 'Блог и кейсы', href: '/#faq', isAnchor: true },
+  { id: 'faq', title: 'FAQ по АУСН', href: '/#faq', isAnchor: true },
   { id: 'contacts', title: 'Контакты', href: '/#contacts', isAnchor: true },
 ]
 

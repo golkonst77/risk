@@ -1,0 +1,52 @@
+#!/bin/sh
+# Git hook: автоматическое обновление версии перед каждым коммитом
+
+# Путь к файлу version.json
+VERSION_FILE="public/version.json"
+PACKAGE_FILE="package.json"
+
+# Проверяем, есть ли изменения (не считая самого version.json)
+if git diff --cached --name-only | grep -qv "^public/version.json$\|^package.json$"; then
+  echo "📦 Автоматическое обновление версии..."
+  
+  # Читаем текущую версию из version.json
+  CURRENT_VERSION=$(node -p "require('./public/version.json').version")
+  CURRENT_BUILD=$(node -p "require('./public/version.json').build")
+  
+  # Увеличиваем patch версию
+  IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+  NEW_PATCH=$((PATCH + 1))
+  NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+  NEW_BUILD=$((CURRENT_BUILD + 1))
+  
+  # Получаем текущую дату
+  CURRENT_DATE=$(date +%Y-%m-%d)
+  
+  # Обновляем version.json
+  cat > "$VERSION_FILE" <<EOF
+{
+  "version": "$NEW_VERSION",
+  "build": "$NEW_BUILD",
+  "date": "$CURRENT_DATE",
+  "description": "Автоматическое обновление версии"
+}
+EOF
+  
+  # Обновляем package.json
+  node -e "
+    const fs = require('fs');
+    const pkg = JSON.parse(fs.readFileSync('$PACKAGE_FILE', 'utf8'));
+    pkg.version = '$NEW_VERSION';
+    fs.writeFileSync('$PACKAGE_FILE', JSON.stringify(pkg, null, 2) + '\n');
+  "
+  
+  # Добавляем обновленные файлы в коммит
+  git add "$VERSION_FILE" "$PACKAGE_FILE"
+  
+  echo "✅ Версия обновлена: $CURRENT_VERSION → $NEW_VERSION (build $NEW_BUILD)"
+else
+  echo "ℹ️  Только изменения в version.json/package.json, версия не обновляется"
+fi
+
+exit 0
+
