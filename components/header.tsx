@@ -20,12 +20,13 @@ import { useDeviceType } from "@/hooks/use-device-type"
 import { VersionBadge } from "./version-badge"
 
 const MENU_ITEMS = [
-  { id: 'services', title: 'Услуги', href: '/#services', isAnchor: true },
-  { id: 'technologies', title: 'Технологии', href: '/#technologies', isAnchor: true },
-  { id: 'pricing', title: 'Тарифы', href: '/#pricing', isAnchor: true },
-  { id: 'faq', title: 'FAQ', href: '/#faq', isAnchor: true },
+  { id: 'technologies', title: 'Инструкции по АУСН', href: '/#technologies', isAnchor: true },
+  { id: 'pricing', title: 'Переход на АУСН', href: '/#pricing', isAnchor: true },
   { id: 'calculator', title: 'Калькулятор', href: '/#calculator', isAnchor: true },
-  { id: 'reviews', title: 'Отзывы', href: '/#reviews', isAnchor: true },
+  { id: 'banks', title: 'Банки для АУСН', href: '/#banks', isAnchor: true },
+  { id: 'news', title: 'Новости', href: '/#news', isAnchor: true },
+  { id: 'services', title: 'Юридическая поддержка', href: '/#services', isAnchor: true },
+  { id: 'faq', title: 'Блог и кейсы', href: '/#faq', isAnchor: true },
   { id: 'contacts', title: 'Контакты', href: '/#contacts', isAnchor: true },
 ]
 
