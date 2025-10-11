@@ -88,6 +88,24 @@ export function getHeroConfig(): HeroConfig {
   try {
     const data = readFileSync(DATA_FILE, 'utf8')
     const config = JSON.parse(data)
+    
+    // Читаем фон из site-config.json
+    try {
+      const siteConfigFile = join(process.cwd(), 'data', 'site-config.json')
+      const siteConfigData = readFileSync(siteConfigFile, 'utf8')
+      const siteConfig = JSON.parse(siteConfigData)
+      
+      // Подставляем фон из site-config
+      if (siteConfig.hero?.backgroundImage) {
+        config.background = {
+          image: `/${siteConfig.hero.backgroundImage}`,
+          overlay: siteConfig.hero.overlay || 30
+        }
+      }
+    } catch (bgError) {
+      console.log('site-config.json не найден, используем фон из homepage.json')
+    }
+    
     console.log('Получение настроек главной страницы:', config)
     return config
   } catch (error) {

@@ -1,0 +1,33 @@
+{
+  "site": {
+    "name": "Портал АУСН",
+    "description": "Навигатор по автоматизированной упрощённой системе налогообложения"
+  },
+  "contacts": {
+    "phone": "+7 (953) 330-17-77",
+    "email": "info@ausn-portal.ru",
+    "address": "Калуга, ул. Дзержинского 37, офис 20",
+    "telegram": "@prostoburo",
+    "vk": "vk.com/buh_urist"
+  },
+  "workingHours": {
+    "mondayFriday": "9:00 - 18:00",
+    "saturday": "По согласованию",
+    "sunday": "Выходной"
+  },
+  "logo": {
+    "type": "image",
+    "imageUrl": "/Логотип.jpg",
+    "text": "Портал АУСН"
+  },
+  "hero": {
+    "backgroundImage": "uploads/1751555704352_ChatGPT_Image_24____._2025__.__11_06_22.png",
+    "overlay": 30
+  },
+  "analytics": {
+    "yandexMetrikaId": "45860892",
+    "enabled": true
+  },
+  "maintenanceMode": false
+}
+

@@ -1,4 +1,5 @@
 // Supabase полностью отключен. Используем локальные данные.
+import { getSiteConfig } from './site-config'
 
 // Общее хранилище настроек для всего приложения
 export interface SiteSettings {
@@ -46,8 +47,8 @@ let localSettings: SiteSettings = {
     saturday: "По согласованию",
     sunday: "Выходной"
   },
-  logoType: "text",
-  logoImageUrl: "",
+  logoType: "image",
+  logoImageUrl: "/Логотип.jpg",
   logoText: "ПростоБюро",
   logoShow: true
 }
@@ -79,14 +80,34 @@ function mapDatabaseToSettings(dbData: any): SiteSettings {
 }
 
 export async function getSettings(): Promise<any> {
+  // Читаем из site-config.json
+  const siteConfig = getSiteConfig()
+  
   return {
-    ...localSettings,
+    siteName: siteConfig.site.name,
+    siteDescription: siteConfig.site.description,
+    phone: siteConfig.contacts.phone,
+    email: siteConfig.contacts.email,
+    address: siteConfig.contacts.address,
+    telegram: siteConfig.contacts.telegram,
+    vk: siteConfig.contacts.vk,
+    maintenanceMode: siteConfig.maintenanceMode,
+    analyticsEnabled: siteConfig.analytics.enabled,
+    working_hours: {
+      monday_friday: siteConfig.workingHours.mondayFriday,
+      saturday: siteConfig.workingHours.saturday,
+      sunday: siteConfig.workingHours.sunday
+    },
+    logoType: siteConfig.logo.type,
+    logoImageUrl: siteConfig.logo.imageUrl,
+    logoText: siteConfig.logo.text,
+    logoShow: true,
     header: {
       logo: {
-        show: localSettings.logoShow !== undefined ? localSettings.logoShow : true,
-        type: localSettings.logoType || "text",
-        imageUrl: localSettings.logoImageUrl || "",
-        text: localSettings.logoText || localSettings.siteName || "ПростоБюро"
+        show: true,
+        type: siteConfig.logo.type,
+        imageUrl: siteConfig.logo.imageUrl,
+        text: siteConfig.logo.text
       }
     }
   }

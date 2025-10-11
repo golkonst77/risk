@@ -124,7 +124,7 @@ export function Hero() {
                   variant="secondary" 
                   className="px-3 md:px-4 py-1 md:py-2 text-xs md:text-sm font-medium bg-sky-200 text-sky-700 border-sky-300 shadow-md hover:bg-sky-300 hover:border-sky-400"
                 >
-                  Мы защищаем ваш бизнес
+                  {badge.text}
                 </Badge>
               </div>
             )}

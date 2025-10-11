@@ -39,8 +39,8 @@
     }
   ],
   "background": {
-    "image": "/hero-bg.jpg",
-    "overlay": 20
+    "image": "/uploads/1752577122792_hero-bg.jpg",
+    "overlay": 25
   },
   "layout": {
     "alignment": "center",
