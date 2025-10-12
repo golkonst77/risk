@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>CMS</title>
+    <meta name="robots" content="noindex" />
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/netlify-cms-app@^2/dist/netlify-cms.css" />
+  </head>
+  <body>
+    <script src="https://unpkg.com/netlify-cms-app@^2/dist/netlify-cms.js"></script>
+    <script>
+      NetlifyCmsApp.init({ configPath: '/admin/config.yml' });
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.on('init', user => {
+          if (!user) window.netlifyIdentity.on('login', () => document.location.reload());
+        });
+      }
+    </script>
+  </body>
+</html>
