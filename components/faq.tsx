@@ -90,9 +90,13 @@ export function FAQ() {
       <div className="container mx-auto px-4">
         {/* Hero блок с синим градиентом */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 md:p-12 text-white text-center mb-12">
-          <Badge className="bg-yellow-400 text-gray-900 px-4 py-1 rounded-full mb-4 text-sm font-semibold">
-            БАЗА ЗНАНИЙ ПО АУСН (наполняется)
-          </Badge>
+          <a
+            href="/kb"
+            className="inline-block bg-yellow-400 text-gray-900 px-4 py-1 rounded-full mb-4 text-sm font-semibold hover:bg-yellow-300 transition-colors"
+            aria-label="Открыть базу знаний"
+          >
+            БАЗА ЗНАНИЙ ПО АУСН (перейти)
+          </a>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
             Остались вопросы? Сейчас ответим
           </h2>
