@@ -425,21 +425,8 @@ export function CalculatorForm({ onSubmit, initialData, onChange }: CalculatorFo
             <p className="text-xs text-muted-foreground">Список загружается из `/data/regions.json`</p>
           </div>
 
-          {/* Подтверждение права на АУСН (перемещено вниз) */}
-          <div className="space-y-3">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                <p className="font-medium mb-2">Проверьте соответствие требованиям АУСН:</p>
-                <ul className="list-disc list-inside space-y-1 text-sm">
-                  <li>Годовой доход ≤ 60 млн руб.</li>
-                  <li>Количество сотрудников ≤ 5 человек</li>
-                  <li>Регион входит в список пилотных (Москва, МО, Калужская обл. и др.)</li>
-                  <li>Ваш вид деятельности не запрещен для АУСН</li>
-                </ul>
-              </AlertDescription>
-            </Alert>
-
+          {/* Подтверждение права на АУСН (только чекбокс) */}
+          <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="confirmedEligibility"

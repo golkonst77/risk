@@ -97,7 +97,7 @@ export const AUSN_CONFIG = {
 // Константы для расчетов
 export const TAX_CONSTANTS = {
   // Фиксированные взносы ИП за себя (2024-2025)
-  IP_FIXED_INSURANCE: 49500,
+  IP_FIXED_INSURANCE: 53658,
   IP_INSURANCE_THRESHOLD: 300000,
   IP_ADDITIONAL_INSURANCE_RATE: 0.01,
 
@@ -115,6 +115,10 @@ export const TAX_CONSTANTS = {
   // Страховые взносы
   EMPLOYEE_INSURANCE_RATE: 0.302, // 30.2% от ФОТ
   AUSN_INJURY_RATE: 0.002, // 0.2% на травматизм для АУСН
+
+  // Доп. индекс (надбавка) по УСН при доходе > 10 млн (Variant B)
+  USN_SURCHARGE_THRESHOLD: 10_000_000,
+  USN_SURCHARGE_RATE: 0.05,
 }
 
 /**
@@ -134,6 +138,7 @@ export interface TaxCalculationResult {
   tax: number // Основной налог
   insurance: number // Страховые взносы
   total: number // Итого к уплате
+  surcharge?: number // Доп. надбавка (например, 5% при доходе > 10 млн на УСН)
   taxBreakdown?: { // Детализация налога (для ОСНО)
     ndfl?: number
     profitTax?: number
@@ -180,10 +185,16 @@ export function calculateUSN6(params: {
     tax = Math.max(0, tax - reduction)
   }
 
+  // Надбавка по Variant B: если доход > порога, 5% от ВСЕГО оборота
+  const surcharge = revenue >= TAX_CONSTANTS.USN_SURCHARGE_THRESHOLD
+    ? revenue * TAX_CONSTANTS.USN_SURCHARGE_RATE
+    : 0
+
   return {
     tax,
     insurance: selfInsurance + employeeInsurance,
-    total: tax + selfInsurance + employeeInsurance,
+    surcharge,
+    total: tax + selfInsurance + employeeInsurance + surcharge,
     insuranceBreakdown: {
       self: selfInsurance,
       employees: employeeInsurance,
@@ -225,10 +236,16 @@ export function calculateUSN15(params: {
 
   // Взносы НЕ уменьшают налог для УСН 15%
 
+  // Надбавка по Variant B: если доход > порога, 5% от ВСЕГО оборота
+  const surcharge = revenue > TAX_CONSTANTS.USN_SURCHARGE_THRESHOLD
+    ? revenue * TAX_CONSTANTS.USN_SURCHARGE_RATE
+    : 0
+
   return {
     tax,
     insurance: selfInsurance + employeeInsurance,
-    total: tax + selfInsurance + employeeInsurance,
+    surcharge,
+    total: tax + selfInsurance + employeeInsurance + surcharge,
     insuranceBreakdown: {
       self: selfInsurance,
       employees: employeeInsurance,

@@ -23,6 +23,13 @@ export function DashboardSummary({ results }: DashboardSummaryProps) {
   const savingsPercent = hasEconomy ? 
     Math.max(results.ausn8.savingsPercent, results.ausn20.savingsPercent) : 0
 
+  // Выбираем отображаемые значения для правой панели
+  const displayed = bestOption === 'ausn8'
+    ? results.ausn8
+    : bestOption === 'ausn20'
+    ? results.ausn20
+    : results.current
+
   return (
     <DashboardCard
       title="Итоговая аналитика"
@@ -97,34 +104,25 @@ export function DashboardSummary({ results }: DashboardSummaryProps) {
               <div className="flex justify-between">
                 <span>Налог:</span>
                 <span className="font-semibold">
-                  {bestOption === 'ausn8' 
-                    ? formatCurrency(results.ausn8.tax)
-                    : bestOption === 'ausn20'
-                    ? formatCurrency(results.ausn20.tax)
-                    : formatCurrency(results.current.tax)
-                  }
+                  {formatCurrency(displayed.tax)}
                 </span>
               </div>
+              {typeof displayed.surcharge === 'number' && displayed.surcharge > 0 && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Надбавка 5% (доход &gt; 10 млн):</span>
+                  <span className="font-semibold">{formatCurrency(displayed.surcharge)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Взносы:</span>
                 <span className="font-semibold">
-                  {bestOption === 'ausn8'
-                    ? formatCurrency(results.ausn8.insurance)
-                    : bestOption === 'ausn20'
-                    ? formatCurrency(results.ausn20.insurance)
-                    : formatCurrency(results.current.insurance)
-                  }
+                  {formatCurrency(displayed.insurance)}
                 </span>
               </div>
               <div className="pt-2 border-t border-gray-300 flex justify-between">
                 <span className="font-medium">Итого в год:</span>
                 <span className="font-bold text-lg">
-                  {bestOption === 'ausn8'
-                    ? formatCurrency(results.ausn8.total)
-                    : bestOption === 'ausn20'
-                    ? formatCurrency(results.ausn20.total)
-                    : formatCurrency(results.current.total)
-                  }
+                  {formatCurrency(displayed.total)}
                 </span>
               </div>
             </div>

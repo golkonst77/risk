@@ -35,23 +35,36 @@ export function DashboardChartsNew({ results, formData }: DashboardChartsNewProp
 
   const maxValue = Math.max(...barData.map(d => d.value))
 
-  // Данные для круговой диаграммы (лучший вариант)
+  // Данные для круговой диаграммы (предпочтительно система с надбавкой 5%)
   const bestSystem = 
     results.bestOption === 'ausn8' ? results.ausn8 :
     results.bestOption === 'ausn20' ? results.ausn20 :
     results.current
 
-  const profit = formData.revenue - formData.expenses - bestSystem.total
+  const systemWithSurcharge = [results.current, results.ausn8, results.ausn20]
+    .find(s => typeof s.surcharge === 'number' && s.surcharge > 0)
+
+  const pieSystem = systemWithSurcharge || bestSystem
+
+  const profit = formData.revenue - formData.expenses - pieSystem.total
 
   const pieSegments: PieChartSegment[] = [
     {
       label: 'Налоги',
-      value: bestSystem.tax,
+      value: pieSystem.tax,
       color: DASHBOARD_THEME.colors.primary,
     },
+    // Отдельно выделяем надбавку 5% при доходе > 10 млн
+    ...(pieSystem.surcharge && pieSystem.surcharge > 0
+      ? [{
+          label: '5% НДС',
+          value: pieSystem.surcharge,
+          color: DASHBOARD_THEME.colors.chart.usn6,
+        } as PieChartSegment]
+      : []),
     {
       label: 'Взносы',
-      value: bestSystem.insurance,
+      value: pieSystem.insurance,
       color: DASHBOARD_THEME.colors.chart.osno,
     },
     {
@@ -123,8 +136,8 @@ export function DashboardChartsNew({ results, formData }: DashboardChartsNewProp
       <DashboardCard
         title="Структура расходов"
         description={`Распределение при ${
-          results.bestOption === 'ausn8' ? 'АУСН 8%' :
-          results.bestOption === 'ausn20' ? 'АУСН 20%' :
+          pieSystem === results.ausn8 ? 'АУСН 8%' :
+          pieSystem === results.ausn20 ? 'АУСН 20%' :
           results.current.systemName
         }`}
         gradient="success"

@@ -19,6 +19,7 @@ export function DashboardComparisonTable({ results }: DashboardComparisonTablePr
       id: 'current',
       name: results.current.systemName,
       tax: results.current.tax,
+      surcharge: results.current.surcharge || 0,
       insurance: results.current.insurance,
       total: results.current.total,
       savings: 0,
@@ -28,6 +29,7 @@ export function DashboardComparisonTable({ results }: DashboardComparisonTablePr
       id: 'ausn8',
       name: 'АУСН 8% (Доходы)',
       tax: results.ausn8.tax,
+      surcharge: results.ausn8.surcharge || 0,
       insurance: results.ausn8.insurance,
       total: results.ausn8.total,
       savings: results.ausn8.savings,
@@ -37,6 +39,7 @@ export function DashboardComparisonTable({ results }: DashboardComparisonTablePr
       id: 'ausn20',
       name: 'АУСН 20% (Доходы минус расходы)',
       tax: results.ausn20.tax,
+      surcharge: results.ausn20.surcharge || 0,
       insurance: results.ausn20.insurance,
       total: results.ausn20.total,
       savings: results.ausn20.savings,
@@ -70,6 +73,7 @@ export function DashboardComparisonTable({ results }: DashboardComparisonTablePr
             <tr className="border-b-2 border-gray-200">
               <th className="text-left py-3 px-4 font-semibold text-gray-700">Налоговый режим</th>
               <th className="text-right py-3 px-4 font-semibold text-gray-700">Налог</th>
+              <th className="text-right py-3 px-4 font-semibold text-gray-700">5% НДС</th>
               <th className="text-right py-3 px-4 font-semibold text-gray-700">Взносы</th>
               <th className="text-right py-3 px-4 font-semibold text-gray-700">Итого</th>
               <th className="text-right py-3 px-4 font-semibold text-gray-700">Экономия</th>
@@ -101,6 +105,9 @@ export function DashboardComparisonTable({ results }: DashboardComparisonTablePr
                   </td>
                   <td className="py-4 px-4 text-right font-medium text-gray-900">
                     {formatCurrency(system.tax)}
+                  </td>
+                  <td className="py-4 px-4 text-right font-medium text-gray-900">
+                    {formatCurrency(system.surcharge || 0)}
                   </td>
                   <td className="py-4 px-4 text-right font-medium text-gray-900">
                     {formatCurrency(system.insurance)}
@@ -142,7 +149,7 @@ export function DashboardComparisonTable({ results }: DashboardComparisonTablePr
                 {/* Развёрнутая информация */}
                 {expandedRow === system.id && (
                   <tr className="bg-blue-50 border-b border-gray-100">
-                    <td colSpan={6} className="py-4 px-8">
+                    <td colSpan={7} className="py-4 px-8">
                       <div className="space-y-3 text-sm">
                         <div className="flex items-start gap-2">
                           <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -162,6 +169,9 @@ export function DashboardComparisonTable({ results }: DashboardComparisonTablePr
                                 system.id === 'ausn20' || system.name.includes('15%') ? 'Доходы минус расходы' :
                                 'Смешанная'
                               }</p>
+                              {system.surcharge > 0 && (
+                                <p>• Доп. надбавка 5% (доход &gt; 10 млн): {formatCurrency(system.surcharge)}</p>
+                              )}
                               <p>• Страховые взносы: {formatCurrency(system.insurance)}</p>
                               {system.id.startsWith('ausn') && (
                                 <p className="text-green-700">• АУСН: автоматический расчёт и отчётность через банк</p>

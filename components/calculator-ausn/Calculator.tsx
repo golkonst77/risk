@@ -217,16 +217,7 @@ export function Calculator() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">
             <Card className="rounded-3xl bg-white/95 border border-slate-200 shadow-[0_10px_30px_rgba(2,6,23,0.06)]">
-              <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <DollarSign className="h-6 w-6 text-blue-600" />
-                  Основные данные
-                </CardTitle>
-                <CardDescription>
-                  Заполните информацию о вашем бизнесе для расчета
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent className="pt-4">
                 <CalculatorForm
                   onSubmit={handleCalculate}
                   initialData={formData || undefined}
@@ -237,7 +228,7 @@ export function Calculator() {
               </CardContent>
             </Card>
           </div>
-          <div className="lg:col-span-1 lg:sticky lg:top-6 h-fit">
+          <div className="lg:col-span-1 lg:sticky lg:top-6 lg:max-h-[calc(100vh-6rem)] overflow-auto h-fit pr-1">
             <DashboardLimits
               eligibility={eligibility}
               revenue={formData?.revenue || 0}
