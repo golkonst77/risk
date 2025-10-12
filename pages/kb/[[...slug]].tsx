@@ -1,5 +1,3 @@
-import fs from 'fs'
-import path from 'path'
 import matter from 'gray-matter'
 import { GetStaticPaths, GetStaticProps } from 'next'
 import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote'
@@ -18,25 +16,28 @@ export default function KBArticle({ source, frontmatter }: Props) {
   )
 }
 
-const KB_CONTENT_PATH = path.join(process.cwd(), 'content', 'kb')
-
-const getAllMdxFiles = (dirPath: string, fileList: string[] = []): string[] => {
-  if (!fs.existsSync(dirPath)) return fileList
-  const files = fs.readdirSync(dirPath)
-
-  files.forEach(file => {
-    const filePath = path.join(dirPath, file)
-    if (fs.statSync(filePath).isDirectory()) {
-      fileList = getAllMdxFiles(filePath, fileList)
-    } else if (filePath.endsWith('.mdx')) {
-      fileList.push(filePath)
-    }
-  })
-
-  return fileList
-}
-
 export const getStaticPaths: GetStaticPaths = async () => {
+  const fs = require('fs')
+  const path = require('path')
+
+  const KB_CONTENT_PATH = path.join(process.cwd(), 'content', 'kb')
+
+  const getAllMdxFiles = (dirPath: string, fileList: string[] = []): string[] => {
+    if (!fs.existsSync(dirPath)) return fileList
+    const files = fs.readdirSync(dirPath)
+
+    files.forEach((file: string) => {
+      const filePath = path.join(dirPath, file)
+      if (fs.statSync(filePath).isDirectory()) {
+        fileList = getAllMdxFiles(filePath, fileList)
+      } else if (filePath.endsWith('.mdx')) {
+        fileList.push(filePath)
+      }
+    })
+
+    return fileList
+  }
+
   const files = getAllMdxFiles(KB_CONTENT_PATH)
 
   const paths = files.map(file => {
@@ -49,7 +50,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     if (slug.length === 1 && slug[0] === 'index') {
       return { params: { slug: [] } }
     }
-    
+
     return { params: { slug } }
   })
 
@@ -57,6 +58,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
 }
 
 export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
+  const fs = require('fs')
+  const path = require('path')
+
+  const KB_CONTENT_PATH = path.join(process.cwd(), 'content', 'kb')
   const slug = (params?.slug as string[]) || []
   const slugPath = slug.length > 0 ? slug.join('/') : 'index'
   const filePath = path.join(KB_CONTENT_PATH, `${slugPath}.mdx`)
