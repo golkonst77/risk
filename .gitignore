@@ -54,7 +54,11 @@ Thumbs.db
 *.swo
 
 # local data
+# Ignore generic uploads folders, but keep assets under public/uploads in repo
 uploads/
+!public/uploads/
+!public/uploads/**
+
 temp/
 cache/
 
