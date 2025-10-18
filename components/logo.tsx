@@ -16,13 +16,16 @@ interface LogoProps {
   className?: string
 }
 
-export function Logo({ siteName = "ПростоБюро", className = "" }: LogoProps) {
+export function Logo({ siteName = "ПростоБюро АУСН", className = "" }: LogoProps) {
   const [logoConfig, setLogoConfig] = useState<LogoConfig>({
-    text: "ПростоБюро",
+    text: "ПростоБюро АУСН",
     show: true,
     type: "text",
     imageUrl: "",
   })
+  
+  // Константа для фиксированного текста логотипа
+  const fixedLogoText = "ПростоБюро АУСН"
 
   const fetchLogoConfig = async () => {
     try {
@@ -35,7 +38,8 @@ export function Logo({ siteName = "ПростоБюро", className = "" }: Logo
         // Если данные свежие (менее 5 минут), используем кэш
         if (now - cacheTime < 300000) {
           console.log("Logo: Using cached config")
-          setLogoConfig(parsed.config)
+          // Всегда используем наш фиксированный текст
+          setLogoConfig({...parsed.config, text: fixedLogoText})
           return
         }
       }
@@ -52,10 +56,15 @@ export function Logo({ siteName = "ПростоБюро", className = "" }: Logo
         console.log("Logo: Received data:", data)
         if (data.header?.logo) {
           console.log("Logo: Updating config:", data.header.logo)
-          setLogoConfig(data.header.logo)
+          // Сохраняем наш фиксированный текст
+          const updatedConfig = {
+            ...data.header.logo,
+            text: fixedLogoText
+          };
+          setLogoConfig(updatedConfig)
           // Сохраняем в localStorage для кэширования
           localStorage.setItem('logo-config', JSON.stringify({
-            config: data.header.logo,
+            config: updatedConfig,
             timestamp: Date.now()
           }))
         }
@@ -100,18 +109,16 @@ export function Logo({ siteName = "ПростоБюро", className = "" }: Logo
               }}
             />
           </div>
-          {logoConfig.text && (
-            <span className="font-bold text-xl">{logoConfig.text}</span>
-          )}
+          <span className="font-bold text-xl">{fixedLogoText}</span>
         </>
       ) : (
         <>
           <div className="h-12 w-12 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
             <span className="text-white font-bold text-lg">ПБ</span>
           </div>
-          <span className="font-bold text-xl">{logoConfig.text || siteName}</span>
+          <span className="font-bold text-xl">{fixedLogoText}</span>
         </>
       )}
     </Link>
   )
-} 
+}
