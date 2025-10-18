@@ -44,44 +44,46 @@ interface QuizAnswer {
 const questions = [
   {
     id: 1,
-    title: "Какой у вас сейчас статус бизнеса?",
+    title: "Какова ваша текущая организационно-правовая форма?",
     type: "single" as const,
     options: [
-      { value: "planning", label: "Только собираюсь открыть бизнес", discount: 5 },
-      { value: "ip", label: "ИП без сотрудников", discount: 10 },
-      { value: "ooo-usn", label: "ООО на УСН", discount: 15 },
-      { value: "ooo-osn", label: "ООО на ОСНО", discount: 20 },
+      { value: "ip_no_staff", label: "ИП без сотрудников" },
+      { value: "ip_with_staff", label: "ИП с сотрудниками" },
+      { value: "ooo", label: "ООО" },
+      { value: "planning", label: "Только планирую открытие бизнеса" },
     ],
   },
   {
     id: 2,
-    title: "Как вы сейчас ведёте бухгалтерию?",
+    title: "Какой у вас ориентировочный годовой доход?",
     type: "single" as const,
     options: [
-      { value: "self", label: "Сам(а) через онлайн-сервисы", discount: 5 },
-      { value: "staff", label: "Штатный бухгалтер", discount: 10 },
-      { value: "outsource", label: "Внешняя бухгалтерия (аутсорсинг)", discount: 15 },
-      { value: "chaos", label: "Пока никак — всё в хаосе", discount: 25 },
+      { value: "income_lt_10", label: "До 10 млн рублей" },
+      { value: "income_10_60", label: "10–60 млн рублей" },
+      { value: "income_gt_60", label: "Более 60 млн рублей" },
+      { value: "income_none", label: "Ещё не было дохода (стартап/новое дело)" },
     ],
   },
   {
     id: 3,
-    title: "Что вас сейчас беспокоит больше всего?",
-    type: "multiple" as const,
+    title: "Сколько работников трудится в компании (без учёта ИП)?",
+    type: "single" as const,
     options: [
-      { value: "fines", label: "Боюсь штрафов и проверок", discount: 10 },
-      { value: "taxes", label: "Не понимаю, какие налоги платить", discount: 10 },
-      { value: "time", label: "Хочу сэкономить время и нервы", discount: 10 },
+      { value: "emp_0", label: "Нет сотрудников" },
+      { value: "emp_1_2", label: "1–2 сотрудника" },
+      { value: "emp_3_5", label: "3–5 сотрудников" },
+      { value: "emp_gt_5", label: "Более 5 сотрудников" },
     ],
   },
   {
     id: 4,
-    title: "Какие услуги вам актуальны?",
-    type: "multiple" as const,
+    title: "Какой режим налогообложения используете сейчас?",
+    type: "single" as const,
     options: [
-      { value: "full", label: "Полное бухгалтерское обслуживание", discount: 15 },
-      { value: "registration", label: "Помощь при открытии ИП/ООО", discount: 10 },
-      { value: "optimization", label: "Оптимизация налогообложения", discount: 15 },
+      { value: "usn", label: "УСН (упрощённая система)" },
+      { value: "osno", label: "ОСНО (общая система)" },
+      { value: "npd", label: "НПД (самозанятость)" },
+      { value: "patent_other", label: "Патент или другой специальный режим" },
     ],
   },
 ]
@@ -225,23 +227,25 @@ async function sendWhatsAppMessage(phone: string, message: string) {
 
 // Определяем тип бизнеса на основе ответов
 const getBusinessType = (answers: QuizAnswer[]): "ip" | "ooo" | "both" => {
-  // Ищем ответ на вопрос о типе бизнеса
   const businessTypeAnswer = answers.find(a => a.questionId === 1)?.answer
-  
   if (!businessTypeAnswer) return "both"
-  
+
   if (Array.isArray(businessTypeAnswer)) {
-    return businessTypeAnswer.includes("ip") && businessTypeAnswer.includes("ooo") 
-      ? "both" 
-      : businessTypeAnswer.includes("ip") 
-        ? "ip" 
-        : "ooo"
+    const hasIP = businessTypeAnswer.some(v => v.startsWith("ip"))
+    const hasOOO = businessTypeAnswer.some(v => v.includes("ooo"))
+    if (hasIP && hasOOO) return "both"
+    if (hasIP) return "ip"
+    if (hasOOO) return "ooo"
+    return "both"
   }
-  
-  return businessTypeAnswer === "ip" ? "ip" : "ooo"
+
+  const val = businessTypeAnswer as string
+  if (val.startsWith("ip")) return "ip"
+  if (val.includes("ooo")) return "ooo"
+  return "both"
 }
 
-// Обновляем функцию отправки документа с улучшенной обработкой ошибок
+// Отправка PDF чек-листа (статический файл из public/CHEK_LIST)
 async function sendWhatsAppDocument(phone: string, quiz_result: "ip" | "ooo" | "both", caption: string) {
   console.log('[QUIZ] Начинаем отправку PDF:', { phone, quiz_result, caption });
   
@@ -253,30 +257,10 @@ async function sendWhatsAppDocument(phone: string, quiz_result: "ip" | "ooo" | "
   }
   
   try {
-    // Получаем подходящий чек-лист
-    const checklistResponse = await fetch('/api/get-checklist', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ quiz_result }),
-    });
-    
-    if (!checklistResponse.ok) {
-      const errorText = await checklistResponse.text();
-      console.error('[QUIZ] Ошибка получения чек-листа:', errorText);
-      throw new Error(`Ошибка получения чек-листа: ${checklistResponse.status}`);
-    }
-    
-    const { checklist } = await checklistResponse.json();
-    
-    if (!checklist) {
-      console.error('[QUIZ] Чек-лист не найден для результата:', quiz_result);
-      throw new Error('Чек-лист не найден');
-    }
-    
-    console.log('[QUIZ] Получен чек-лист:', checklist);
-    
+    // Статический файл из public: /CHEK_LIST/Chek-list-perehoda.pdf
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const fileUrl = `${origin}/CHEK_LIST/Chek-list-perehoda.pdf`
+
     // Отправляем чек-лист через WhatsApp
     const response = await fetch('/api/send-whatsapp-document', {
       method: 'POST',
@@ -285,7 +269,7 @@ async function sendWhatsAppDocument(phone: string, quiz_result: "ip" | "ooo" | "
       },
       body: JSON.stringify({
         phone: cleanPhone,
-        filePath: checklist.file_url,
+        filePath: fileUrl,
         caption: caption,
       }),
     });

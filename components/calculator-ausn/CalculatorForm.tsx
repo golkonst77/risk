@@ -72,7 +72,7 @@ export function CalculatorForm({ onSubmit, initialData, onChange }: CalculatorFo
     if (field === 'revenue') {
       // При изменении дохода ограничиваем расходы сверху новым доходом
       let clampedExpenses = 0
-      applyFormUpdate(({...formData, revenue: numValue, expenses: (clampedExpenses = Math.min(formData.expenses, numValue))}))
+      applyFormUpdate({ ...formData, revenue: numValue, expenses: (clampedExpenses = Math.min(formData.expenses, numValue)) })
       validateField('revenue', numValue)
       validateField('expenses', clampedExpenses)
     } else {
@@ -86,7 +86,11 @@ export function CalculatorForm({ onSubmit, initialData, onChange }: CalculatorFo
     const numValue = values[0]
     if (field === 'revenue') {
       let clampedExpenses = 0
-      applyFormUpdate({ ...formData, revenue: numValue, expenses: (clampedExpenses = Math.min(formData.expenses, numValue)) })
+      applyFormUpdate({
+        ...formData,
+        revenue: numValue,
+        expenses: (clampedExpenses = Math.min(formData.expenses, numValue))
+      })
       validateField('revenue', numValue)
       validateField('expenses', clampedExpenses)
     } else {
@@ -233,7 +237,7 @@ export function CalculatorForm({ onSubmit, initialData, onChange }: CalculatorFo
 
           {/* Текущая система налогообложения */}
           <div className="space-y-3">
-            <Label>Текущая система налогообложения</Label>
+            <Label className="text-base font-semibold">Текущая система налогообложения</Label>
             <RadioGroup
               value={formData.currentTaxSystem}
               onValueChange={(value: TaxSystem) =>
@@ -276,106 +280,109 @@ export function CalculatorForm({ onSubmit, initialData, onChange }: CalculatorFo
             </RadioGroup>
           </div>
 
-          {/* Годовой доход */}
-          <div className="space-y-2">
-            <Label htmlFor="revenue">Годовой доход (оборот), руб.</Label>
-            <Input
-              id="revenue"
-              type="text"
-              value={formData.revenue > 0 ? formatNumber(formData.revenue) : ''}
-              onChange={(e) => handleNumberChange('revenue', e.target.value)}
-              placeholder="Например: 5 000 000"
-              className={errors.revenue ? 'border-red-500' : ''}
-            />
-            <div className="pt-1">
-              <Slider
-                value={[Math.min(formData.revenue, AUSN_CONFIG.limits.maxRevenue)]}
-                min={0}
-                max={AUSN_CONFIG.limits.maxRevenue}
-                step={100_000}
-                onValueChange={(v) => handleSliderChange('revenue', v)}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Годовой доход */}
+            <div className="space-y-2">
+              <Label htmlFor="revenue" className="text-base font-semibold">Годовой доход (оборот), руб.</Label>
+              <Input
+                id="revenue"
+                type="text"
+                value={formData.revenue > 0 ? formatNumber(formData.revenue) : ''}
+                onChange={(e) => handleNumberChange('revenue', e.target.value)}
+                placeholder="Например: 5 000 000"
+                className={errors.revenue ? 'border-red-500' : ''}
               />
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>0</span>
-                <span>60 000 000</span>
+              <div className="pt-1">
+                <Slider
+                  value={[Math.min(formData.revenue, AUSN_CONFIG.limits.maxRevenue)]}
+                  min={0}
+                  max={AUSN_CONFIG.limits.maxRevenue}
+                  step={100_000}
+                  onValueChange={(v) => handleSliderChange('revenue', v)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>0</span>
+                  <span>60 000 000</span>
+                </div>
               </div>
+              {errors.revenue && showValidation && (
+                <p className="text-sm text-red-500">{errors.revenue}</p>
+              )}
+              <p className="text-sm text-muted-foreground">
+                {formData.revenue > 0 && `Итого: ${formatNumber(formData.revenue)} руб.`}
+              </p>
             </div>
-            {errors.revenue && showValidation && (
-              <p className="text-sm text-red-500">{errors.revenue}</p>
-            )}
-            <p className="text-sm text-muted-foreground">
-              {formData.revenue > 0 && `Итого: ${formatNumber(formData.revenue)} руб.`}
-            </p>
-          </div>
 
-          {/* Годовые расходы */}
-          <div className="space-y-2">
-            <Label htmlFor="expenses">Годовые расходы, руб.</Label>
-            <Input
-              id="expenses"
-              type="text"
-              value={formData.expenses > 0 ? formatNumber(formData.expenses) : ''}
-              onChange={(e) => handleNumberChange('expenses', e.target.value)}
-              placeholder="Например: 2 000 000"
-              className={errors.expenses ? 'border-red-500' : ''}
-            />
-            <div className="pt-1">
-              <Slider
-                value={[Math.min(formData.expenses, Math.min(formData.revenue || AUSN_CONFIG.limits.maxRevenue, AUSN_CONFIG.limits.maxRevenue))]}
-                min={0}
-                max={Math.min(formData.revenue || AUSN_CONFIG.limits.maxRevenue, AUSN_CONFIG.limits.maxRevenue)}
-                step={100_000}
-                onValueChange={(v) => handleSliderChange('expenses', v)}
+            {/* Годовые расходы */}
+            <div className="space-y-2">
+              <Label htmlFor="expenses" className="text-base font-semibold">Годовые расходы, руб.</Label>
+              <Input
+                id="expenses"
+                type="text"
+                value={formData.expenses > 0 ? formatNumber(formData.expenses) : ''}
+                onChange={(e) => handleNumberChange('expenses', e.target.value)}
+                placeholder="Например: 2 000 000"
+                className={errors.expenses ? 'border-red-500' : ''}
               />
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>0</span>
-                <span>{formatNumber(Math.min(formData.revenue || AUSN_CONFIG.limits.maxRevenue, AUSN_CONFIG.limits.maxRevenue))}</span>
+              <div className="pt-1">
+                <Slider
+                  value={[Math.min(formData.expenses, Math.min(formData.revenue || AUSN_CONFIG.limits.maxRevenue, AUSN_CONFIG.limits.maxRevenue))]}
+                  min={0}
+                  max={Math.min(formData.revenue || AUSN_CONFIG.limits.maxRevenue, AUSN_CONFIG.limits.maxRevenue)}
+                  step={100_000}
+                  onValueChange={(v) => handleSliderChange('expenses', v)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>0</span>
+                  <span>{formatNumber(Math.min(formData.revenue || AUSN_CONFIG.limits.maxRevenue, AUSN_CONFIG.limits.maxRevenue))}</span>
+                </div>
               </div>
+              {errors.expenses && showValidation && (
+                <p className="text-sm text-red-500">{errors.expenses}</p>
+              )}
+              <p className="text-sm text-muted-foreground">
+                {formData.expenses > 0 && `Итого: ${formatNumber(formData.expenses)} руб. | `}
+                Учитываются для расчета УСН 15% и ОСНО
+              </p>
             </div>
-            {errors.expenses && showValidation && (
-              <p className="text-sm text-red-500">{errors.expenses}</p>
-            )}
-            <p className="text-sm text-muted-foreground">
-              {formData.expenses > 0 && `Итого: ${formatNumber(formData.expenses)} руб. | `}
-              Учитываются для расчета УСН 15% и ОСНО
-            </p>
-          </div>
 
-          {/* Количество сотрудников */}
-          <div className="space-y-2">
-            <Label htmlFor="employees">Количество сотрудников</Label>
-            <Input
-              id="employees"
-              type="number"
-              min="0"
-              max="999"
-              value={formData.employees || ''}
-              onChange={(e) => handleNumberChange('employees', e.target.value)}
-              placeholder="0"
-              className={errors.employees ? 'border-red-500' : ''}
-            />
-            <div className="pt-1">
-              <Slider
-                value={[Math.min(formData.employees, AUSN_CONFIG.limits.maxEmployees)]}
-                min={0}
-                max={AUSN_CONFIG.limits.maxEmployees}
-                step={1}
-                onValueChange={(v) => handleSliderChange('employees', v)}
+            {/* Количество сотрудников */}
+            <div className="space-y-2">
+              <Label htmlFor="employees" className="text-base font-semibold">Количество сотрудников</Label>
+              <Input
+                id="employees"
+                type="number"
+                min="0"
+                max="999"
+                value={formData.employees || ''}
+                onChange={(e) => handleNumberChange('employees', e.target.value)}
+                placeholder="0"
+                className={errors.employees ? 'border-red-500' : ''}
               />
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>0</span>
-                <span>{AUSN_CONFIG.limits.maxEmployees}</span>
+              <div className="pt-1">
+                <Slider
+                  value={[Math.min(formData.employees, AUSN_CONFIG.limits.maxEmployees)]}
+                  min={0}
+                  max={AUSN_CONFIG.limits.maxEmployees}
+                  step={1}
+                  onValueChange={(v) => handleSliderChange('employees', v)}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>0</span>
+                  <span>{AUSN_CONFIG.limits.maxEmployees}</span>
+                </div>
               </div>
+              {errors.employees && showValidation && (
+                <p className="text-sm text-red-500">{errors.employees}</p>
+              )}
             </div>
-            {errors.employees && showValidation && (
-              <p className="text-sm text-red-500">{errors.employees}</p>
-            )}
           </div>
+          
 
           {/* Средняя зарплата */}
           {formData.employees > 0 && (
             <div className="space-y-2">
-              <Label htmlFor="avgSalary">Средняя зарплата сотрудника (в месяц), руб.</Label>
+              <Label htmlFor="avgSalary" className="text-base font-semibold">Средняя зарплата сотрудника (в месяц), руб.</Label>
               <Input
                 id="avgSalary"
                 type="text"
@@ -408,7 +415,7 @@ export function CalculatorForm({ onSubmit, initialData, onChange }: CalculatorFo
 
           {/* Регион применения */}
           <div className="space-y-2">
-            <Label htmlFor="region">Регион применения</Label>
+            <Label htmlFor="region" className="text-base font-semibold">Регион применения</Label>
             <Select
               value={formData.region}
               onValueChange={(value: string) => applyFormUpdate({ ...formData, region: value } as CalculatorFormData)}
@@ -437,7 +444,7 @@ export function CalculatorForm({ onSubmit, initialData, onChange }: CalculatorFo
               />
               <Label
                 htmlFor="confirmedEligibility"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                className="text-base font-semibold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
               >
                 Я проверил, что имею право перейти на АУСН
               </Label>
