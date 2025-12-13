@@ -29,7 +29,7 @@ const news = [
 
 export function News() {
   return (
-    <section className="py-12 md:py-20 bg-gray-50">
+    <section id="news" className="py-12 md:py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 md:mb-16">
           <div className="mb-4 md:mb-0 text-center">

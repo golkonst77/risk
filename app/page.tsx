@@ -7,18 +7,16 @@ import { Reviews } from "@/components/reviews"
 import { News } from "@/components/news"
 import { Contacts } from "@/components/contacts"
 import { Technologies } from "@/components/technologies"
-import { useHomepageSections } from "@/hooks/use-homepage-sections"
-import { useDeviceType } from "@/hooks/use-device-type"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 import { useEffect } from "react"
+import { SupportSection } from "@/components/support-section"
 
 export default function HomePage() {
-  const { isSectionVisible, loading } = useHomepageSections()
-  const deviceType = useDeviceType()
-
   useEffect(() => {
     if (typeof window === "undefined") return
     if (!window.location.hash) return
-    if (loading) return // Ждем загрузки конфигурации
+    
     let attempts = 0
     function tryScroll() {
       const el = document.getElementById(window.location.hash.substring(1))
@@ -30,31 +28,21 @@ export default function HomePage() {
       }
     }
     tryScroll()
-  }, [typeof window !== "undefined" ? window.location.hash : null, loading])
-
-  if (loading) {
-    return (
-      <main id="home-page" className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Загрузка...</p>
-        </div>
-      </main>
-    )
-  }
-
-  // Определяем тип устройства для проверки видимости
-  const deviceTypeForVisibility = deviceType === 'tablet' ? 'desktop' : deviceType
+  }, [typeof window !== "undefined" ? window.location.hash : null])
 
   return (
     <main id="home-page" className="min-h-screen">
-      {isSectionVisible('hero', deviceTypeForVisibility) && <Hero />}
-      {isSectionVisible('technologies', deviceTypeForVisibility) && <Technologies />}
-      {isSectionVisible('faq', deviceTypeForVisibility) && <FAQ />}
-      {isSectionVisible('calculator', deviceTypeForVisibility) && <Calculator />}
-      {isSectionVisible('reviews', deviceTypeForVisibility) && <Reviews />}
-      {isSectionVisible('news', deviceTypeForVisibility) && <News />}
-      {isSectionVisible('contacts', deviceTypeForVisibility) && <Contacts />}
+      <Hero />
+      <Technologies />
+      <Calculator />
+      <Reviews />
+      <News />
+
+      {/* Полноценный блок поддержки на главной */}
+      <SupportSection />
+
+      <FAQ />
+      <Contacts />
     </main>
   )
 }

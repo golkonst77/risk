@@ -1,22 +1,14 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Phone, MessageCircle, Menu, X, ChevronDown } from "lucide-react"
+import { Phone, MessageCircle, Menu, X } from "lucide-react"
 import { useContactForm } from "@/hooks/use-contact-form"
 import { useCruiseClick } from "@/hooks/use-cruise-click"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Mail, Lock, User, FileText, Loader2 } from "lucide-react"
 import { Logo } from "./logo"
-import { ReCAPTCHAComponent } from "./recaptcha"
-import { useRouter, usePathname } from "next/navigation"
-import { useHomepageSections } from "@/hooks/use-homepage-sections"
-import { useDeviceType } from "@/hooks/use-device-type"
+ 
 
 const MENU_ITEMS = [
   { id: 'technologies', title: 'Инструкции', href: '/#technologies', isAnchor: true },
@@ -24,43 +16,52 @@ const MENU_ITEMS = [
   { id: 'regions', title: 'Регионы', href: '/regions', isAnchor: false },
   { id: 'banks', title: 'Банки', href: '/banks', isAnchor: false },
   { id: 'news', title: 'Новости', href: '/#news', isAnchor: true },
-  { id: 'support', title: 'Поддержка', href: '/support', isAnchor: false },
+  { id: 'support', title: 'Поддержка', href: '/#support', isAnchor: true },
   { id: 'faq', title: 'FAQ', href: '/#faq', isAnchor: true },
   { id: 'contacts', title: 'Контакты', href: '/#contacts', isAnchor: true },
 ]
 
 export const Header = () => {
-  const { openContactForm } = useContactForm()
-  const { handleCruiseClick, modalOpen, setModalOpen, quizUrl } = useCruiseClick()
-  const [authOpen, setAuthOpen] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [settings, setSettings] = useState<any>(null)
   const router = useRouter()
-  const pathname = usePathname()
-  const { isSectionVisible } = useHomepageSections()
-  const deviceType = useDeviceType()
-
+  const { openContactForm } = useContactForm()
+  const { handleCruiseClick, modalOpen, setModalOpen } = useCruiseClick()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [settings, setSettings] = useState({
+    phone: '+7 (953) 330-17-77',
+    email: 'info@example.com',
+    address: '',
+    telegram: '',
+    vk: ''
+  })
+  const [isClient, setIsClient] = useState(false)
+  
   useEffect(() => {
-    const fetchSettings = async () => {
+    setIsClient(true)
+    
+    // Загружаем настройки
+    const loadSettings = async () => {
       try {
-        const response = await fetch('/api/settings')
-        if (response.ok) {
-          const data = await response.json()
-          setSettings(data)
+        const res = await fetch('/api/settings', { cache: 'no-store' })
+        const loadedSettings = await res.json()
+        if (loadedSettings) {
+          setSettings(prev => ({
+            ...prev,
+            ...loadedSettings
+          }))
         }
       } catch (error) {
-        console.error('Error fetching settings:', error)
+        console.error('Failed to load settings:', error)
       }
     }
-    fetchSettings()
+    
+    loadSettings()
   }, [])
-
-  // Фильтруем пункты меню на основе настроек видимости секций
-  const visibleMenuItems = MENU_ITEMS.filter(item => {
-    // Преобразуем тип устройства в формат для видимости секций
-    const deviceTypeForVisibility = deviceType === 'tablet' ? 'desktop' : deviceType
-    return isSectionVisible(item.id, deviceTypeForVisibility)
-  })
+  
+  // Используем window.location только на клиенте
+  const pathname = isClient ? window.location.pathname : ''
+  
+  // Все пункты меню видны
+  const visibleMenuItems = MENU_ITEMS
 
   const handleMenuClick = (item: any) => (e: React.MouseEvent) => {
     if (item.isAnchor) {
@@ -85,7 +86,7 @@ export const Header = () => {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
       <div className="w-full px-6 flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
         <div className="flex items-center">
@@ -112,9 +113,9 @@ export const Header = () => {
         <div className="hidden lg:flex items-center gap-3">
           {/* Контакты: телефон */}
           <a
-            href={`tel:${settings?.phone?.replace(/\s/g, '') || '+79533301777'}`}
+            href={`tel:${settings.phone.replace(/\s/g, '')}`}
             className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 text-gray-700 hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm"
-            title={settings?.phone || '+7 (953) 330-17-77'}
+            title={settings.phone}
           >
             <Phone className="h-5 w-5" />
           </a>
