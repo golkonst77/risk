@@ -35,6 +35,8 @@ const baseConfig = {
 
 const nextConfig = {
   ...baseConfig,
+  // Включаем статическую выгрузку в папку out
+  output: 'export',
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
 }
 
