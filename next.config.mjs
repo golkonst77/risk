@@ -37,6 +37,10 @@ const nextConfig = {
   ...baseConfig,
   // Включаем статическую выгрузку в папку out
   output: 'export',
+  // Сайт будет обслуживаться из подкаталога /ausn
+  basePath: '/ausn',
+  assetPrefix: '/ausn',
+  trailingSlash: true,
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
 }
 
