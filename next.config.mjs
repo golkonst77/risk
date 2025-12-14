@@ -33,13 +33,22 @@ const baseConfig = {
   },
 }
 
+const isDev = process.env.NODE_ENV === 'development'
+const isStaticExport = process.env.AUSN_STATIC_EXPORT === 'true'
+
 const nextConfig = {
   ...baseConfig,
-  // Включаем статическую выгрузку в папку out
-  output: 'export',
-  // Сайт будет обслуживаться из подкаталога /ausn
-  basePath: '/ausn',
-  assetPrefix: '/ausn',
+  // Статический export включаем только по флагу AUSN_STATIC_EXPORT=true.
+  // Это позволяет локально делать next build без конфликтов с app/api,
+  // а на сервере явно собирать статику для /ausn.
+  ...(isStaticExport ? {
+    output: 'export',
+    basePath: '/ausn',
+    assetPrefix: '/ausn',
+  } : {
+    basePath: undefined,
+    assetPrefix: undefined,
+  }),
   trailingSlash: true,
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
 }

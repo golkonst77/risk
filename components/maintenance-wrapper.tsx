@@ -10,6 +10,7 @@
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { MaintenancePage } from "./maintenance-page"
+import siteConfig from "@/data/site-config.json"
 
 interface MaintenanceWrapperProps {
   children: React.ReactNode
@@ -31,24 +32,8 @@ export function MaintenanceWrapper({ children }: MaintenanceWrapperProps) {
       return
     }
 
-    const checkMaintenanceMode = async () => {
-      try {
-        const response = await fetch("/api/maintenance")
-        if (response.ok) {
-          const data = await response.json()
-          setIsMaintenanceMode(data.maintenanceMode || false)
-        } else {
-          setIsMaintenanceMode(false)
-        }
-      } catch (error) {
-        console.error("Error checking maintenance mode:", error)
-        setIsMaintenanceMode(false)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    checkMaintenanceMode()
+    setIsMaintenanceMode(Boolean((siteConfig as any)?.maintenanceMode))
+    setIsLoading(false)
   }, [isAdminRoute])
 
   // Показываем загрузку пока проверяем режим

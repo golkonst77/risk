@@ -11,7 +11,8 @@ export function Footer() {
   const [policyText, setPolicyText] = useState("")
 
   useEffect(() => {
-    fetch("/policy.md")
+    // Относительный путь, чтобы корректно работать под basePath '/ausn'
+    fetch("policy.md")
       .then(res => res.text())
       .then(setPolicyText)
       .catch(() => setPolicyText("Ошибка загрузки политики."))
@@ -77,7 +78,7 @@ export function Footer() {
           <div className="text-xs leading-snug">
             Продолжая использовать этот сайт, вы соглашаетесь на их использование. Запретить обработку Cookies можно в настройках Вашего браузера.<br />
             Для получения дополнительной информации, пожалуйста, ознакомьтесь с нашей{' '}
-            <a href="/policy" className="underline hover:text-blue-400">Политикой конфиденциальности</a>.
+            <Link href="/policy" className="underline hover:text-blue-400">Политикой конфиденциальности</Link>.
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ interface VersionInfo {
   version: string
   build: string
   date: string
-  description: string
+  description?: string
 }
 
 export function VersionInfo() {
@@ -17,7 +17,8 @@ export function VersionInfo() {
     const fetchVersion = async () => {
       try {
         console.log('🔍 Загружаем версию...')
-        const response = await fetch('/version.json')
+        // Относительный путь, чтобы корректно работать под basePath '/ausn'
+        const response = await fetch('version.json')
         console.log('📡 Ответ сервера:', response.status, response.ok)
         if (response.ok) {
           const data = await response.json()

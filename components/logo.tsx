@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useMemo } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import siteConfig from "@/data/site-config.json"
 
 interface LogoConfig {
   text: string
@@ -17,71 +18,19 @@ interface LogoProps {
 }
 
 export function Logo({ siteName = "ПростоБюро АУСН", className = "" }: LogoProps) {
-  const [logoConfig, setLogoConfig] = useState<LogoConfig>({
-    text: "ПростоБюро АУСН",
-    show: true,
-    type: "text",
-    imageUrl: "",
-  })
-  
-  // Константа для фиксированного текста логотипа
   const fixedLogoText = "ПростоБюро АУСН"
 
-  const fetchLogoConfig = async () => {
-    try {
-      // Проверяем, есть ли уже данные в localStorage
-      const cachedData = localStorage.getItem('logo-config')
-      if (cachedData) {
-        const parsed = JSON.parse(cachedData)
-        const cacheTime = parsed.timestamp || 0
-        const now = Date.now()
-        // Если данные свежие (менее 5 минут), используем кэш
-        if (now - cacheTime < 300000) {
-          console.log("Logo: Using cached config")
-          // Всегда используем наш фиксированный текст
-          setLogoConfig({...parsed.config, text: fixedLogoText})
-          return
-        }
-      }
-
-      console.log("Logo: Fetching logo config...")
-      const response = await fetch("/api/settings", {
-        cache: 'force-cache', // Включаем кэширование
-        headers: {
-          'Cache-Control': 'max-age=300' // Кэш на 5 минут
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        console.log("Logo: Received data:", data)
-        if (data.header?.logo) {
-          console.log("Logo: Updating config:", data.header.logo)
-          // Сохраняем наш фиксированный текст
-          const updatedConfig = {
-            ...data.header.logo,
-            text: fixedLogoText
-          };
-          setLogoConfig(updatedConfig)
-          // Сохраняем в localStorage для кэширования
-          localStorage.setItem('logo-config', JSON.stringify({
-            config: updatedConfig,
-            timestamp: Date.now()
-          }))
-        }
-      } else {
-        console.error("Logo: Failed to fetch config, status:", response.status)
-      }
-    } catch (error) {
-      console.error("Logo: Error fetching config:", error)
+  const logoConfig = useMemo<LogoConfig>(() => {
+    const cfg: any = siteConfig
+    const type = (cfg?.logo?.type === 'image' ? 'image' : 'text') as LogoConfig['type']
+    const imageUrl = typeof cfg?.logo?.imageUrl === 'string' ? cfg.logo.imageUrl : ''
+    const text = fixedLogoText
+    return {
+      show: true,
+      type,
+      imageUrl,
+      text,
     }
-  }
-
-  useEffect(() => {
-    fetchLogoConfig()
-    
-    // Обновляем настройки каждые 2 секунды
-    const interval = setInterval(fetchLogoConfig, 2000)
-    return () => clearInterval(interval)
   }, [])
 
   if (!logoConfig.show) {
@@ -102,11 +51,6 @@ export function Logo({ siteName = "ПростоБюро АУСН", className = "
               fill
               className="object-contain rounded-lg"
               unoptimized={true} // Отключаем оптимизацию Next.js для избежания кэширования
-              onError={(e) => {
-                console.error("Logo: Image failed to load:", logoConfig.imageUrl)
-                // Fallback to text logo if image fails
-                setLogoConfig(prev => ({ ...prev, type: "text" }))
-              }}
             />
           </div>
           <span className="font-bold text-xl">{fixedLogoText}</span>

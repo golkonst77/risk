@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCruiseClick } from "@/hooks/use-cruise-click"
 import { DollarSign, AlertTriangle, CheckCircle, MessageCircle, Shield } from "lucide-react"
 import AnimatedContent from './AnimatedContent'
+import homepageConfig from "@/data/homepage.json"
 
 interface HeroConfig {
   badge: {
@@ -52,39 +53,8 @@ const iconMap = {
 }
 
 export function Hero() {
-  const [config, setConfig] = useState<HeroConfig | null>(null)
+  const [config] = useState<HeroConfig>(() => homepageConfig as unknown as HeroConfig)
   const { handleCruiseClick } = useCruiseClick()
-
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        console.log("Hero: Fetching homepage config...")
-        const response = await fetch("/api/homepage")
-        if (response.ok) {
-          const data = await response.json()
-          console.log("Hero: Loaded config:", data)
-          setConfig(data)
-        } else {
-          console.error("Hero: Failed to fetch config")
-        }
-      } catch (error) {
-        console.error("Hero: Error fetching config:", error)
-      }
-    }
-
-    fetchConfig()
-  }, [])
-
-  if (!config) {
-    return (
-      <section className="relative min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600">Загрузка...</p>
-        </div>
-      </section>
-    )
-  }
 
   // Значения по умолчанию для безопасности
   const backgroundImage = config.background?.image || ''
