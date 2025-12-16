@@ -26,17 +26,24 @@ export function PDFViewerModal({ isOpen, onClose, pdfPath, title = "Докуме
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-6xl w-[95vw] h-[95vh] p-0 overflow-hidden">
-        <DialogHeader className="p-4 border-b flex justify-between items-center">
-          <DialogTitle className="text-lg font-medium">{title}</DialogTitle>
-          <DialogClose asChild>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-5 w-5" />
+        <DialogHeader className="p-4 border-b flex items-center justify-between gap-3">
+          <DialogTitle className="text-lg font-medium truncate">{title}</DialogTitle>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <a href={pdfPath} download target="_blank" rel="noopener noreferrer">
+                Скачать PDF
+              </a>
             </Button>
-          </DialogClose>
+            <DialogClose asChild>
+              <Button variant="ghost" size="icon" onClick={onClose}>
+                <X className="h-5 w-5" />
+              </Button>
+            </DialogClose>
+          </div>
         </DialogHeader>
-        <div className="w-full h-[calc(95vh-4rem)] flex-1 overflow-hidden bg-white">
+        <div className="w-full h-[calc(95vh-72px)] flex-1 overflow-hidden bg-white">
           <iframe 
-            src={`${pdfPath}#toolbar=1&navpanes=1&scrollbar=1`}
+            src={`${pdfPath}#toolbar=0&navpanes=0&scrollbar=1`}
             className="w-full h-full border-0" 
             title={title}
             frameBorder="0"
