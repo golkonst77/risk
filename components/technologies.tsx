@@ -94,10 +94,22 @@ export function Technologies() {
   const [automationModalOpen, setAutomationModalOpen] = useState(false)
   const [limitsModalOpen, setLimitsModalOpen] = useState(false)
 
+  const resolveHref = (href: string) => {
+    if (typeof window === "undefined") return href
+    const pathname = window.location.pathname || ""
+    const basePath = pathname.startsWith("/ausn") ? "/ausn" : ""
+    if (!basePath) return href
+    if (href.startsWith("/") && !href.startsWith(`${basePath}/`)) {
+      return `${basePath}${href}`
+    }
+    return href
+  }
+
   const handleClick = (href: string, title?: string) => {
+    const resolvedHref = resolveHref(href)
     // Если это PDF файл, открываем в модальном окне
-    if (href.endsWith('.pdf')) {
-      setCurrentPdfPath(href)
+    if (resolvedHref.endsWith('.pdf')) {
+      setCurrentPdfPath(resolvedHref)
       setModalTitle(title || "Документ")
       setPdfModalOpen(true)
       return
@@ -118,7 +130,7 @@ export function Technologies() {
       setLimitsModalOpen(true)
       return
     } else {
-      router.push(href)
+      router.push(resolvedHref)
     }
   }
 
