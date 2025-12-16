@@ -105,8 +105,17 @@ export function Technologies() {
     return href
   }
 
+  const normalizeInternalHref = (href: string) => {
+    // Для static export безопаснее держать URL страниц со слэшем на конце: /banks/ -> banks/index.html
+    if (!href.startsWith("/")) return href
+    if (href.includes("#") || href.includes("?")) return href
+    if (href.endsWith("/")) return href
+    if (/\.[a-z0-9]+$/i.test(href)) return href
+    return `${href}/`
+  }
+
   const handleClick = (href: string, title?: string) => {
-    const resolvedHref = resolveHref(href)
+    const resolvedHref = normalizeInternalHref(resolveHref(href))
     // Если это PDF файл, открываем в модальном окне
     if (resolvedHref.endsWith('.pdf')) {
       setCurrentPdfPath(resolvedHref)
