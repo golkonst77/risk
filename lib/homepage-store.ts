@@ -42,45 +42,45 @@ const DATA_FILE = join(process.cwd(), 'data', 'homepage.json')
 
 // Настройки по умолчанию
 const defaultHeroConfig: HeroConfig = {
-  badge: { text: "Защищаем ваш бизнес от налоговых рисков", show: true },
-  title: { text: "Ваш личный", highlightText: "щит" },
+  badge: { text: "Поможем сделать правильный выбор налогообложения", show: true },
+  title: { text: "ПОРТАЛ — навигатор по АУСН для малого бизнеса:", highlightText: "калькулятор, чек-лист, документы" },
   description:
-    "Пока вы строите свою империю, мы защищаем её тылы от проверок, штрафов и бумажной волокиты. Спокойно занимайтесь завоеванием мира.",
-  button: { text: "Хочу на круиз без штрафов", show: true },
+    "Помогаем оценить право на АУСН, рассчитать налог и подготовить документы. Понятные инструкции и консультация без лишней бюрократии.",
+  button: { text: "Получить консультацию бесплатно", show: true },
   features: [
     {
-      id: "expensive",
-      title: "Дорого",
-      description: "Штрафы и пени съедают прибыль",
-      icon: "DollarSign",
-      color: "red",
+      id: "calc",
+      title: "Калькулятор",
+      description: "Расчёт налога и взносов АУСН",
+      icon: "Calculator",
+      color: "blue",
       show: true,
     },
     {
-      id: "scary",
-      title: "Страшно",
-      description: "Проверки и бумажная волокита",
-      icon: "AlertTriangle",
-      color: "orange",
-      show: true,
-    },
-    {
-      id: "perfect",
-      title: "Идеально",
-      description: "Спокойствие и рост бизнеса",
+      id: "checklist",
+      title: "Чек-лист",
+      description: "Проверка права на АУСН",
       icon: "CheckCircle",
       color: "green",
       show: true,
     },
+    {
+      id: "docs",
+      title: "Документы",
+      description: "Пакет для перехода на АУСН",
+      icon: "FileText",
+      color: "orange",
+      show: true,
+    },
   ],
-  background: { image: "/uploads/1751554532718________.jpg", overlay: 70 },
+  background: { image: "/uploads/1752577122792_hero-bg.jpg", overlay: 25 },
   layout: {
     alignment: "center",
     maxWidth: "max-w-4xl",
     marginLeft: 0,
     marginTop: 0,
     marginBottom: 0,
-    paddingX: 20,
+    paddingX: 60,
   },
 }
 
@@ -96,7 +96,8 @@ export function getHeroConfig(): HeroConfig {
       const siteConfig = JSON.parse(siteConfigData)
       
       // Подставляем фон из site-config
-      if (siteConfig.hero?.backgroundImage) {
+      const hasHomepageBg = Boolean(config?.background?.image)
+      if (!hasHomepageBg && siteConfig.hero?.backgroundImage) {
         config.background = {
           image: `/${siteConfig.hero.backgroundImage}`,
           overlay: siteConfig.hero.overlay || 30
