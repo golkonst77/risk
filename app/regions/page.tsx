@@ -49,7 +49,9 @@ export default function RegionsPage() {
   useEffect(() => {
     const loadRegions = async () => {
       try {
-        const res = await fetch(`data/regions.json?v=${Date.now()}`)
+        const pathname = typeof window !== "undefined" ? (window.location.pathname || "") : ""
+        const basePath = pathname.startsWith("/ausn") ? "/ausn" : ""
+        const res = await fetch(`${basePath}/data/regions.json?v=${Date.now()}`)
         const data = await res.json()
         setRegionsData(data)
       } catch (e) {

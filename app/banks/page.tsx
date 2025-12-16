@@ -37,7 +37,9 @@ export default function BanksPage() {
   useEffect(() => {
     const loadBanks = async () => {
       try {
-        const response = await fetch(`data/banks.json?v=${Date.now()}`)
+        const pathname = typeof window !== "undefined" ? (window.location.pathname || "") : ""
+        const basePath = pathname.startsWith("/ausn") ? "/ausn" : ""
+        const response = await fetch(`${basePath}/data/banks.json?v=${Date.now()}`)
         const data = await response.json()
         setBanksData(data)
       } catch (error) {
