@@ -37,7 +37,7 @@ export default function BanksPage() {
   useEffect(() => {
     const loadBanks = async () => {
       try {
-        const response = await fetch(`/data/banks.json?v=${Date.now()}`)
+        const response = await fetch(`data/banks.json?v=${Date.now()}`)
         const data = await response.json()
         setBanksData(data)
       } catch (error) {

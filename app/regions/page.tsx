@@ -49,7 +49,7 @@ export default function RegionsPage() {
   useEffect(() => {
     const loadRegions = async () => {
       try {
-        const res = await fetch(`/data/regions.json?v=${Date.now()}`)
+        const res = await fetch(`data/regions.json?v=${Date.now()}`)
         const data = await res.json()
         setRegionsData(data)
       } catch (e) {
