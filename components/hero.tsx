@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCruiseClick } from "@/hooks/use-cruise-click"
@@ -54,10 +54,27 @@ const iconMap = {
 
 export function Hero() {
   const [config] = useState<HeroConfig>(() => homepageConfig as unknown as HeroConfig)
+  const [basePath, setBasePath] = useState("")
   const { handleCruiseClick } = useCruiseClick()
 
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const pathname = window.location.pathname || ""
+    // На проде AUSN развёрнут под /ausn.
+    if (pathname.startsWith("/ausn")) {
+      setBasePath("/ausn")
+    }
+  }, [])
+
   // Значения по умолчанию для безопасности
-  const backgroundImage = config.background?.image || ''
+  const rawBackgroundImage = config.background?.image || ''
+  const backgroundImage =
+    rawBackgroundImage &&
+    basePath &&
+    rawBackgroundImage.startsWith("/") &&
+    !rawBackgroundImage.startsWith(`${basePath}/`)
+      ? `${basePath}${rawBackgroundImage}`
+      : rawBackgroundImage
   const overlayOpacity = (config.background?.overlay || 10) / 100
   const badge = config.badge || { text: 'Защищаем ваш бизнес', show: true }
   const title = config.title || { text: 'Ваш личный', highlightText: 'щит' }
