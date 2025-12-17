@@ -7,7 +7,8 @@ import { useCruiseClick } from "@/hooks/use-cruise-click"
 import { DollarSign, AlertTriangle, CheckCircle, MessageCircle, Shield } from "lucide-react"
 import AnimatedContent from './AnimatedContent'
 import homepageConfig from "@/data/homepage.json"
-import { AusnBlobButton } from "@/components/AusnBlobButton"
+import { PDFViewerModal } from "@/components/pdf-viewer-modal"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface HeroConfig {
   badge: {
@@ -57,6 +58,11 @@ export function Hero() {
   const [config] = useState<HeroConfig>(() => homepageConfig as unknown as HeroConfig)
   const [basePath, setBasePath] = useState("")
   const { handleCruiseClick } = useCruiseClick()
+  const [pdfModalOpen, setPdfModalOpen] = useState(false)
+  const [currentPdfPath, setCurrentPdfPath] = useState("")
+  const [modalTitle, setModalTitle] = useState("")
+  const [docsModalOpen, setDocsModalOpen] = useState(false)
+  const [documentTemplates, setDocumentTemplates] = useState<Array<{ label: string; file: string }>>([])
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -65,6 +71,43 @@ export function Hero() {
     if (pathname.startsWith("/ausn")) {
       setBasePath("/ausn")
     }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const fallback: Array<{ label: string; file: string }> = [
+      { label: "Бухгалтерское сопровождение", file: "Buhgalterskoe-soprovozhdenie-ProstoByuro.pdf" },
+      { label: "Как избежать блокировки счета", file: "Kak-izbezhat-blokirovki-scheta.pdf" },
+      { label: "Как выбрать бух. компанию", file: "Kak_vibrat_buh_kompany.pdf" },
+      { label: "Сравнение ИП и ООО", file: "Sravnenie-IP-i-OOO-Chto-vybrat-dlya-vashego-biznesa.pdf" },
+      { label: "Восстановление бухгалтерского учета", file: "Vosstanovlenie-buhgalterskogo-ucheta.pdf" },
+    ]
+
+    const base = (window.location.pathname || "").startsWith("/ausn") ? "/ausn" : ""
+
+    const loadTemplates = async () => {
+      try {
+        const res = await fetch(`${base}/CHEK_LIST/templates.json?v=${Date.now()}`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        if (!Array.isArray(data)) throw new Error("Invalid templates.json")
+
+        const cleaned = data
+          .filter((x) => x && typeof x === "object")
+          .map((x: any) => ({
+            label: typeof x.label === "string" ? x.label : "",
+            file: typeof x.file === "string" ? x.file : "",
+          }))
+          .filter((x) => x.label && x.file)
+
+        setDocumentTemplates(cleaned.length ? cleaned : fallback)
+      } catch {
+        setDocumentTemplates(fallback)
+      }
+    }
+
+    loadTemplates()
   }, [])
 
   // Значения по умолчанию для безопасности
@@ -91,6 +134,36 @@ export function Hero() {
     paddingX: 20
   }
 
+  const runtimeBasePath =
+    typeof window !== "undefined" && (window.location.pathname || "").startsWith("/ausn")
+      ? "/ausn"
+      : basePath
+
+  const handleFeatureClick = (id: string, title: string) => {
+    if (typeof window === "undefined") return
+
+    if (id === "checklist") {
+      setCurrentPdfPath(`${runtimeBasePath}/CHEK_LIST/Chek-list-perehoda.pdf`)
+      setModalTitle(title)
+      setPdfModalOpen(true)
+      return
+    }
+
+    if (id === "docs") {
+      setDocsModalOpen(true)
+      return
+    }
+
+    if (id === "calc") {
+      const target = document.getElementById("calculator")
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" })
+      } else {
+        window.location.href = `${runtimeBasePath}/#calculator`
+      }
+    }
+  }
+
   return (
     <section 
       className="relative min-h-screen flex items-center justify-center px-4 md:px-8"
@@ -101,6 +174,71 @@ export function Hero() {
         backgroundRepeat: 'no-repeat'
       }}
     >
+      <PDFViewerModal
+        isOpen={pdfModalOpen}
+        onClose={() => setPdfModalOpen(false)}
+        pdfPath={currentPdfPath}
+        title={modalTitle}
+      />
+
+      <Dialog open={docsModalOpen} onOpenChange={setDocsModalOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Список документов</DialogTitle>
+            <DialogDescription>
+              Шаблоны форм вы можете скачать по кнопке «Документы» на главной. Ниже перечень того, что потребуется подготовить.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 text-sm leading-6">
+            <div>
+              <h3 className="font-semibold mb-2">Скачать шаблоны</h3>
+              <div className="flex flex-col gap-2">
+                {documentTemplates.map((tpl) => (
+                  <a
+                    key={tpl.file}
+                    href={`${runtimeBasePath}/CHEK_LIST/${tpl.file}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-2 hover:bg-gray-50"
+                  >
+                    <span className="font-medium">{tpl.label}</span>
+                    <span className="text-xs text-gray-500">PDF</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Список документов для перехода на АУСН</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Выписка из ЕГРЮЛ/ЕГРИП (оригинал или нотариально заверенная копия)</li>
+                <li>Заявление о применении АУСН (по форме ФНС)</li>
+                <li>Документ, подтверждающий остаточную стоимость основных средств (справка или расчёт)</li>
+                <li>Информация о среднесписочной численности сотрудников (расчёт, табели)</li>
+                <li>Уставные документы (для ООО: устав, учредительный договор и протокол/решение о назначении директора)</li>
+                <li>Паспорт и ИНН руководителя (копии)</li>
+                <li>Свидетельство о постановке на учёт по НДС (если ранее регистрировались на ОСНО)</li>
+                <li>Договор с уполномоченным банком и реквизиты расчётного счёта</li>
+                <li>Доверенность или полномочия на представителя (если подаёт не руководитель)</li>
+              </ul>
+            </div>
+            <p className="text-muted-foreground">
+              После подготовки шаблонов и заполнения всех форм загрузите их в личный кабинет ФНС или представьте в уполномоченный банк.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setDocsModalOpen(false)} variant="secondary">Закрыть</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <div
+        className="absolute inset-0 z-10"
+        style={{
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.10)',
+        }}
+      />
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-white/0 z-10" />
       <div className="relative z-20 flex flex-col items-center justify-center w-full h-full py-8 md:py-12">
         <div className="relative z-10 w-full flex justify-start">
@@ -141,7 +279,6 @@ export function Hero() {
                 >
                   {button.text}
                 </Button>
-                <AusnBlobButton />
               </div>
             )}
 
@@ -156,11 +293,13 @@ export function Hero() {
                   ]
                   const cardBg = bgVariants[idx % 3]
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={feature.id}
-                      className={`${cardBg} rounded-xl shadow-md p-4 md:p-6 w-full flex flex-col justify-start text-left`}
+                      onClick={() => handleFeatureClick(feature.id, feature.title)}
+                      className={`${cardBg} rounded-xl shadow-md p-4 md:p-6 w-full flex flex-col justify-start text-left cursor-pointer`}
                     >
-                      <div>
+                      <div className="w-full">
                         <AnimatedContent direction="vertical" distance={40} duration={0.7} ease="power3.out" threshold={0.2} animateOpacity={true} initialOpacity={0}>
                           <div
                             className="w-full bg-white rounded-lg py-2 mb-3 text-sm md:text-lg font-bold text-gray-900 flex items-center justify-center min-h-[40px]"
@@ -171,7 +310,7 @@ export function Hero() {
                         </AnimatedContent>
                         <div className="text-gray-700 text-xs md:text-sm mb-2 text-left">{feature.description}</div>
                       </div>
-                    </div>
+                    </button>
                   )
                 })}
               </div>

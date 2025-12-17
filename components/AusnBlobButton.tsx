@@ -3,10 +3,9 @@
 export function AusnBlobButton() {
   return (
     <a
-      href="/"
+      href="https://prostoburo.com/"
       className="
-        fixed z-[60] bottom-8 right-6
-        relative
+        fixed z-[60] top-[22vh] right-[7vw] md:top-[24vh] md:right-[10vw]
         flex items-center justify-center
         w-48 h-48
         bg-[#FF00A8]
@@ -19,9 +18,10 @@ export function AusnBlobButton() {
         cursor-pointer
         select-none
         blob-ausn
+        blob-ausn-vibrate
       "
     >
-      АУСН<br />для&nbsp;своих
+      Закажи<br />бухгалтера!
     </a>
   )
 }

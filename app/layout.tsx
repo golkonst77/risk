@@ -8,6 +8,7 @@ import { ContactForm } from "@/components/contact-form"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "sonner"
 import { YandexMetrica } from "@/components/yandex-metrica"
+import { AusnBlobButton } from "@/components/AusnBlobButton"
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] })
 
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <YandexMetrica ymId={ymId} />
           <Header />
+          <AusnBlobButton />
           <main className="pt-16 md:pt-20">
             {children}
           </main>
