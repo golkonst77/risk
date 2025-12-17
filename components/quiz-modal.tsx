@@ -13,7 +13,6 @@ import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 import { useContactForm } from "@/hooks/use-contact-form"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowRight, ArrowLeft, Gift, Phone, X } from "lucide-react"
-import InputMask from 'react-input-mask'
 import { sendYandexMetric, YANDEX_METRICS_EVENTS } from "@/utils/yandex-metrics"
 
 // CSS анимация для мигающей карточки скидки
@@ -84,6 +83,29 @@ const questions = [
 ]
 
 const bonuses = ["Бесплатная консультация", "Дополнительные услуги"]
+
+function formatRuPhone(input: string) {
+  const digits = (input || "").replace(/\D/g, "")
+  let normalized = digits
+  if (normalized.startsWith("8")) normalized = `7${normalized.slice(1)}`
+  if (normalized.startsWith("9")) normalized = `7${normalized}`
+  if (!normalized.startsWith("7")) normalized = `7${normalized}`
+  normalized = normalized.slice(0, 11)
+
+  const parts = normalized.slice(1)
+  const a = parts.slice(0, 3)
+  const b = parts.slice(3, 6)
+  const c = parts.slice(6, 8)
+  const d = parts.slice(8, 10)
+
+  let out = "+7"
+  if (a) out += ` (${a}`
+  if (a.length === 3) out += ")"
+  if (b) out += ` ${b}`
+  if (c) out += `-${c}`
+  if (d) out += `-${d}`
+  return out
+}
 
 function QuizSidebar({
   canProceed,
@@ -254,7 +276,20 @@ async function sendWhatsAppDocument(phone: string, quiz_result: "ip" | "ooo" | "
   try {
     // Статический файл из public: /CHEK_LIST/Chek-list-perehoda.pdf
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
-    const fileUrl = `${origin}/CHEK_LIST/Chek-list-perehoda.pdf`
+    const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1')
+    const publicOrigin =
+      (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_PUBLIC_ORIGIN) ||
+      (isLocal ? 'https://prostoburo.com' : origin)
+
+    const base =
+      typeof window !== 'undefined' && (window.location.pathname || '').startsWith('/ausn')
+        ? '/ausn'
+        : ''
+    const publicBase =
+      (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_PUBLIC_BASEPATH) ||
+      (isLocal ? '/ausn' : base)
+
+    const fileUrl = `${publicOrigin}${publicBase}/CHEK_LIST/Chek-list-perehoda.pdf`
 
     // Отправляем чек-лист через WhatsApp
     const response = await fetch('/api/send-whatsapp-document', {
@@ -272,7 +307,7 @@ async function sendWhatsAppDocument(phone: string, quiz_result: "ip" | "ooo" | "
     const result = await response.json();
     
     if (!response.ok) {
-      console.error('[QUIZ] Ошибка отправки файла:', result);
+      console.error('[QUIZ] Ошибка отправки файла:', JSON.stringify(result));
       throw new Error(`Ошибка отправки файла: ${response.status}`);
     }
 
@@ -293,6 +328,17 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showThanks, setShowThanks] = useState(false)
   const [coupon, setCoupon] = useState<string | null>(null)
+  const [whatsAppFallbackUrl, setWhatsAppFallbackUrl] = useState<string | null>(null)
+  const [whatsAppAutoSent, setWhatsAppAutoSent] = useState<boolean | null>(null)
+
+  const handleThanksOpenChange = (nextOpen: boolean) => {
+    setShowThanks(nextOpen)
+    if (!nextOpen) {
+      setCoupon(null)
+      setWhatsAppFallbackUrl(null)
+      setWhatsAppAutoSent(null)
+    }
+  }
 
   const totalSteps = questions.length + 1 // +1 for phone step
   const progress = ((currentStep + 1) / totalSteps) * 100
@@ -348,6 +394,7 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
     setIsSubmitting(true)
     let couponSaved = false
     let whatsappSent = false
+    let whatsappManual = false
     let documentSent = false
     
     try {
@@ -374,16 +421,21 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
         })
         
         if (!response.ok) {
-          throw new Error(`Ошибка при сохранении купона: ${response.status}`)
+          if (response.status === 501) {
+            couponSaved = false
+          } else {
+            throw new Error(`Ошибка при сохранении купона: ${response.status}`)
+          }
         }
         
-        const result = await response.json()
-        console.log('Купон сохранен:', result)
-        couponSaved = true
+        if (response.ok) {
+          const result = await response.json()
+          console.log('Купон сохранен:', result)
+          couponSaved = true
+        }
       } catch (error) {
         console.error('Ошибка сохранения купона:', error)
-        const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка'
-        throw new Error(`Не удалось сохранить купон: ${errorMessage}`)
+        couponSaved = false
       }
 
       // ✅ ВКЛЮЧЕНО: Отправка WhatsApp-сообщения клиенту
@@ -397,11 +449,10 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
         const cleanPhone = '7' + phone.replace(/\D/g, '').slice(1, 11);
         const message = `Здравствуйте, спасибо за интерес к нашей компании. Вам купон на скидку ${fullCoupon}. Также Вам бесплатная консультация 30 минут и СКИДКА 50% на первый месяц обслуживания! Если есть вопросы — пишите прямо здесь, ответим оперативно.`;
         const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-        
-        // Открываем WhatsApp в новой вкладке
-        window.open(whatsappUrl, '_blank');
-        whatsappSent = true;
-        console.log('🔗 Открыта ссылка WhatsApp для ручной отправки:', whatsappUrl);
+
+        setWhatsAppFallbackUrl(whatsappUrl)
+        whatsappManual = true
+        whatsappSent = false
       }
       
       // ✅ ВКЛЮЧЕНО: Отправка PDF-файла с чек-листом
@@ -455,10 +506,15 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
         })
         
         console.log('📡 [QUIZ] Получен ответ от API:', notifyResponse.status, notifyResponse.statusText)
+
+        if (notifyResponse.status === 404) {
+          return
+        }
         
         if (!notifyResponse.ok) {
-          const errorData = await notifyResponse.json()
-          throw new Error(`API ответил с ошибкой: ${notifyResponse.status} - ${JSON.stringify(errorData)}`)
+          const errorText = await notifyResponse.text()
+          const shortText = errorText.length > 500 ? `${errorText.slice(0, 500)}...` : errorText
+          throw new Error(`API ответил с ошибкой: ${notifyResponse.status} - ${shortText}`)
         }
         
         const notifyResult = await notifyResponse.json()
@@ -470,6 +526,7 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
       
       setCoupon(fullCoupon)
       setShowThanks(true)
+      setWhatsAppAutoSent(whatsappSent)
       
       // Отправляем цель в Яндекс.Метрику
       if (typeof window !== 'undefined' && (window as any).ym) {
@@ -494,21 +551,29 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
       closeContactForm()
       
                    // Показываем соответствующее сообщение в зависимости от успешности операций
-      if (couponSaved && whatsappSent) {
+      if (whatsappSent) {
         toast({
           title: "Успешно!",
-          description: "Ваш купон сохранен! WhatsApp временно отключен для тестирования. Мы свяжемся с вами по телефону.",
+          description: couponSaved
+            ? "Ваш купон сохранен и отправлен в WhatsApp."
+            : "Мы отправили вам предложение в WhatsApp. Сохранение купона на сайте временно недоступно.",
+        })
+      } else if (whatsappManual) {
+        toast({
+          title: "Почти готово",
+          description: "Не удалось отправить сообщение автоматически. Откройте WhatsApp и отправьте сообщение вручную.",
+          variant: "default",
         })
       } else if (couponSaved) {
         toast({
           title: "Купон сохранен!",
-          description: "Купон сохранен, но возникли проблемы с отправкой. Мы свяжемся с вами по телефону.",
+          description: "Купон сохранен, но возникли проблемы с отправкой в WhatsApp. Мы свяжемся с вами по телефону.",
           variant: "default",
         })
       } else {
         toast({
           title: "Ошибка",
-          description: "Не удалось сохранить купон. Попробуйте еще раз или свяжитесь с нами по телефону.",
+          description: "Не удалось отправить предложение. Попробуйте еще раз или свяжитесь с нами по телефону.",
           variant: "destructive",
         })
       }
@@ -684,25 +749,17 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
                          Оставьте номер телефона и мы отправим персональное предложение со скидкой {" "}
                          <span className="font-bold text-cyan-500">{calculateDiscount().toLocaleString()} ₽</span>
                          <br />
-                         <span className="text-sm font-medium text-green-600">Сообщение отправлено в WhatsApp!</span>
-                         <br />
                          <span className="text-sm font-medium text-green-600">Мы свяжемся с вами в ближайшее время!</span>
                        </p>
-                      <InputMask
-                        mask="+7 (999) 999-99-99"
+                      <Input
+                        id="phone"
+                        type="tel"
+                        inputMode="tel"
                         value={phone}
-                        onChange={e => setPhone(e.target.value)}
-                      >
-                        {(inputProps) => (
-                          <Input
-                            {...inputProps}
-                            id="phone"
-                            type="tel"
-                            placeholder="+7 (___) ___-__-__"
-                            className="text-center text-base py-3 border-2 border-gray-200 focus:border-cyan-400 rounded-2xl shadow-sm w-full"
-                          />
-                        )}
-                      </InputMask>
+                        onChange={(e) => setPhone(formatRuPhone(e.target.value))}
+                        placeholder="+7 (___) ___-__-__"
+                        className="text-center text-base py-3 border-2 border-gray-200 focus:border-cyan-400 rounded-2xl shadow-sm w-full"
+                      />
                       <div className="mb-4">
                         <div className="flex items-center space-x-2 mt-4">
                           <Checkbox
@@ -748,13 +805,21 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
         </DialogContent>
       </Dialog>
       {/* Модалка благодарности */}
-      <Dialog open={showThanks} onOpenChange={setShowThanks}>
+      <Dialog open={showThanks} onOpenChange={handleThanksOpenChange}>
         <DialogTitle className="sr-only">Благодарность за прохождение квиза</DialogTitle>
         <DialogDescription className="sr-only">Ваш купон сохранен, мы свяжемся с вами</DialogDescription>
         <DialogContent className="max-w-md p-8 text-center flex flex-col items-center justify-center">
-          <button onClick={() => setShowThanks(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><X className="w-6 h-6" /></button>
+          <button onClick={() => handleThanksOpenChange(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><X className="w-6 h-6" /></button>
           <h2 className="text-2xl font-bold mb-4 text-green-700">Спасибо за уделенное время!</h2>
-          <p className="text-base text-gray-700 mb-4">Ваш купон сохранен! Сообщение отправлено в WhatsApp.<br/>Мы свяжемся с вами в ближайшее время!<br/>Хорошего дня!</p>
+          <p className="text-base text-gray-700 mb-4">
+            {whatsAppAutoSent
+              ? "Сообщение отправлено в WhatsApp."
+              : "Не удалось отправить сообщение в WhatsApp автоматически."}
+            <br />
+            Мы свяжемся с вами в ближайшее время!
+            <br />
+            Хорошего дня!
+          </p>
           {coupon && (
             <div className="bg-gray-100 rounded-xl p-4 mb-4 w-full">
               <div className="text-sm text-gray-500 mb-1">Ваш купон на скидку:</div>
@@ -762,7 +827,14 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
               <Button size="sm" variant="outline" onClick={() => {navigator.clipboard.writeText(coupon)}}>Скопировать</Button>
             </div>
           )}
-          <Button onClick={() => setShowThanks(false)} className="mt-2 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-xl">Закрыть</Button>
+          {whatsAppFallbackUrl ? (
+            <Button asChild className="mt-2 bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-2 rounded-xl">
+              <a href={whatsAppFallbackUrl} target="_blank" rel="noopener noreferrer">
+                Открыть WhatsApp и отправить
+              </a>
+            </Button>
+          ) : null}
+          <Button onClick={() => handleThanksOpenChange(false)} className="mt-2 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-xl">Закрыть</Button>
         </DialogContent>
       </Dialog>
     </>
