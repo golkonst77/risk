@@ -7,6 +7,7 @@ import { useCruiseClick } from "@/hooks/use-cruise-click"
 import { DollarSign, AlertTriangle, CheckCircle, MessageCircle, Shield } from "lucide-react"
 import AnimatedContent from './AnimatedContent'
 import homepageConfig from "@/data/homepage.json"
+import { AusnBlobButton } from "@/components/AusnBlobButton"
 
 interface HeroConfig {
   badge: {
@@ -140,6 +141,7 @@ export function Hero() {
                 >
                   {button.text}
                 </Button>
+                <AusnBlobButton />
               </div>
             )}
 
