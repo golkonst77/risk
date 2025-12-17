@@ -5,7 +5,7 @@ export function AusnBlobButton() {
     <a
       href="https://prostoburo.com/"
       className="
-        fixed z-[60] top-auto bottom-[14vh] right-[4vw] md:bottom-auto md:top-[24vh] md:right-[10vw]
+        fixed z-[60] top-auto bottom-[14vh] right-[4vw] md:bottom-auto md:top-[12vh] md:right-[12vh]
         flex items-center justify-center
         w-16 h-16 md:w-48 md:h-48
         bg-[#FF00A8]

@@ -1,23 +1,9 @@
 'use client'
 
 import Link from "next/link"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
-import { useState, useEffect } from "react"
-import ReactMarkdown from "react-markdown"
 import { VersionInfo } from "./version-info"
 
 export function Footer() {
-  const [open, setOpen] = useState(false)
-  const [policyText, setPolicyText] = useState("")
-
-  useEffect(() => {
-    // Относительный путь, чтобы корректно работать под basePath '/ausn'
-    fetch("policy.md")
-      .then(res => res.text())
-      .then(setPolicyText)
-      .catch(() => setPolicyText("Ошибка загрузки политики."))
-  }, [])
-
   return (
     <footer className="bg-gray-100 py-12">
       <div className="container mx-auto px-4">
@@ -56,21 +42,6 @@ export function Footer() {
             <div className="text-gray-500">&copy; {new Date().getFullYear()} Все права защищены.</div>
             <div className="mt-2 text-gray-400 text-xs">ООО "ПростоБюро", ИНН: 4027132996. ОГРН: 1174027006592.</div>
             <div className="mt-2 text-gray-400 text-xs">Сайт создан Golkonst. В тесном сотрудничестве с AI.</div>
-            <div className="mt-2 text-gray-400 text-xs">
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                  <button className="underline hover:text-blue-600">Политика конфиденциальности</button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Политика конфиденциальности</DialogTitle>
-                  </DialogHeader>
-                  <div className="max-h-[60vh] overflow-y-auto text-left text-sm">
-                    <ReactMarkdown>{policyText}</ReactMarkdown>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
           </div>
         </div>
         <div className="mt-4 w-full bg-gray-200 text-gray-800 py-4 px-2 text-center rounded">

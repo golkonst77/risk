@@ -109,9 +109,6 @@ export const Header = () => {
       if (normalizedPath !== "/") return false
       const hrefHash = (item.href || "").split("#")[1] ? `#${(item.href || "").split("#")[1]}` : ""
       if (!hrefHash) return false
-      if (!(currentHash || "")) {
-        return item.id === "technologies"
-      }
       return (currentHash || "") === hrefHash
     }
 

@@ -7,8 +7,8 @@ import { Footer } from "@/components/footer"
 import { ContactForm } from "@/components/contact-form"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "sonner"
-import { YandexMetrica } from "@/components/yandex-metrica"
 import { AusnBlobButton } from "@/components/AusnBlobButton"
+import { CookieConsent } from "@/components/cookie-consent"
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] })
 
@@ -30,7 +30,6 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={inter.className}>
-        <YandexMetrica ymId={ymId} />
           <Header />
           <AusnBlobButton />
           <main className="pt-16 md:pt-20">
@@ -38,6 +37,7 @@ export default function RootLayout({
           </main>
           <Footer />
           <ContactForm />
+          <CookieConsent ymId={ymId} />
           <Toaster />
           <SonnerToaster position="top-right" />
       </body>
