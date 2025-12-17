@@ -54,6 +54,9 @@ const iconMap = {
   Shield,
 }
 
+type HeroVariant = "classic" | "simple"
+const HERO_VARIANT: HeroVariant = "simple"
+
 export function Hero() {
   const [config] = useState<HeroConfig>(() => homepageConfig as unknown as HeroConfig)
   const [basePath, setBasePath] = useState("")
@@ -164,6 +167,182 @@ export function Hero() {
     }
   }
 
+  const docsDialog = (
+    <Dialog open={docsModalOpen} onOpenChange={setDocsModalOpen}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Список документов</DialogTitle>
+          <DialogDescription>
+            Шаблоны форм вы можете скачать по кнопке «Документы» на главной. Ниже перечень того, что потребуется подготовить.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-6 text-sm leading-6">
+          <div>
+            <h3 className="font-semibold mb-2">Скачать шаблоны</h3>
+            <div className="flex flex-col gap-2">
+              {documentTemplates.map((tpl) => (
+                <a
+                  key={tpl.file}
+                  href={`${runtimeBasePath}/CHEK_LIST/${tpl.file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-2 hover:bg-gray-50"
+                >
+                  <span className="font-medium">{tpl.label}</span>
+                  <span className="text-xs text-gray-500">PDF</span>
+                </a>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Список документов для перехода на АУСН</h3>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Выписка из ЕГРЮЛ/ЕГРИП (оригинал или нотариально заверенная копия)</li>
+              <li>Заявление о применении АУСН (по форме ФНС)</li>
+              <li>Документ, подтверждающий остаточную стоимость основных средств (справка или расчёт)</li>
+              <li>Информация о среднесписочной численности сотрудников (расчёт, табели)</li>
+              <li>Уставные документы (для ООО: устав, учредительный договор и протокол/решение о назначении директора)</li>
+              <li>Паспорт и ИНН руководителя (копии)</li>
+              <li>Свидетельство о постановке на учёт по НДС (если ранее регистрировались на ОСНО)</li>
+              <li>Договор с уполномоченным банком и реквизиты расчётного счёта</li>
+              <li>Доверенность или полномочия на представителя (если подаёт не руководитель)</li>
+            </ul>
+          </div>
+          <p className="text-muted-foreground">
+            После подготовки шаблонов и заполнения всех форм загрузите их в личный кабинет ФНС или представьте в уполномоченный банк.
+          </p>
+        </div>
+        <DialogFooter>
+          <Button onClick={() => setDocsModalOpen(false)} variant="secondary">Закрыть</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+
+  if (HERO_VARIANT === "simple") {
+    const simpleTitleText = (title.text || "")
+      .replace(/\s+для\s+малого\s+бизнеса\s*:?/i, "")
+      .replace(/\s*калькулятор\s*,\s*чек-?лист\s*,\s*документы\s*/i, "")
+      .trim()
+
+    const simpleHighlightText = (title.highlightText || "")
+      .replace(/\s*калькулятор\s*,\s*чек-?лист\s*,\s*документы\s*/i, "")
+      .trim()
+
+    const renderSimpleTitle = (text: string) => {
+      const parts = (text || "").split(/(АУСН)/i)
+      return parts.map((part, idx) => {
+        if (!part) return null
+        if (part.toLowerCase() === "аусн") {
+          return (
+            <span
+              key={`ausn-${idx}`}
+              className="inline-block text-cyan-300 font-black drop-shadow-[0_2px_10px_rgba(34,211,238,0.45)] text-[1.15em] md:text-[1.25em]"
+            >
+              {part.toUpperCase()}
+            </span>
+          )
+        }
+        return <span key={`t-${idx}`}>{part}</span>
+      })
+    }
+    return (
+      <section
+        className="relative min-h-screen pt-16 md:pt-20"
+        style={{
+          backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <PDFViewerModal
+          isOpen={pdfModalOpen}
+          onClose={() => setPdfModalOpen(false)}
+          pdfPath={currentPdfPath}
+          title={modalTitle}
+        />
+        {docsDialog}
+
+        <div
+          className="absolute inset-0"
+          style={{
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
+            backgroundColor: "rgba(255, 255, 255, 0.10)",
+          }}
+        />
+        <div className="absolute inset-0 bg-black/35" />
+        <div className="relative z-10 px-6 md:px-16 py-12 md:py-16 max-w-3xl">
+          {badge.show && (
+            <span className="mb-4 inline-block px-5 py-2.5 bg-blue-200 text-blue-900 rounded-full text-sm md:text-base font-semibold shadow-sm">
+              {badge.text}
+            </span>
+          )}
+
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 md:mb-6 drop-shadow-lg">
+            {renderSimpleTitle(simpleTitleText)}
+            {simpleHighlightText ? (
+              <>
+                {" "}
+                <span className="text-blue-300">{simpleHighlightText}</span>
+              </>
+            ) : null}
+          </h1>
+
+          {button.show && (
+            <Button
+              size="lg"
+              onClick={handleCruiseClick}
+              className="w-full sm:w-auto h-auto whitespace-normal text-center px-6 sm:px-10 md:px-12 py-6 md:py-7 text-lg md:text-xl font-extrabold leading-snug rounded-2xl bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 text-white shadow-[0_14px_32px_rgba(0,0,0,0.45)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_55px_rgba(0,0,0,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300/70 focus-visible:shadow-[0_22px_55px_rgba(0,0,0,0.55)] active:translate-y-0 active:shadow-[0_10px_24px_rgba(0,0,0,0.40)]"
+              style={{
+                boxShadow: "0 14px 32px rgba(0,0,0,0.45)",
+                filter: "drop-shadow(0 10px 22px rgba(0,0,0,0.28))",
+              }}
+            >
+              {button.text}
+            </Button>
+          )}
+        </div>
+
+        <div className="relative z-10 px-4 md:px-8 pb-10">
+          <div className="w-full mt-8 md:mt-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-6xl">
+              {features.filter(feature => feature.show).map((feature, idx) => {
+                const bgVariants = [
+                  "bg-[#FFF8F0]",
+                  "bg-[#F5E6D6]",
+                  "bg-[#E9D8C3]",
+                ]
+                const cardBg = bgVariants[idx % 3]
+                return (
+                  <button
+                    type="button"
+                    key={feature.id}
+                    onClick={() => handleFeatureClick(feature.id, feature.title)}
+                    className={`${cardBg} rounded-xl shadow-md p-4 md:p-6 w-full flex flex-col justify-start text-left cursor-pointer`}
+                  >
+                    <div className="w-full">
+                      <AnimatedContent direction="vertical" distance={40} duration={0.7} ease="power3.out" threshold={0.2} animateOpacity={true} initialOpacity={0}>
+                        <div
+                          className="w-full bg-white rounded-lg py-2 mb-3 text-sm md:text-lg font-bold text-gray-900 flex items-center justify-center min-h-[40px]"
+                          style={{ boxShadow: "8px 8px 0 #000" }}
+                        >
+                          {feature.title}
+                        </div>
+                      </AnimatedContent>
+                      <div className="text-gray-700 text-xs md:text-sm mb-2 text-left">{feature.description}</div>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section 
       className="relative min-h-screen flex items-center justify-center px-4 md:px-8"
@@ -181,55 +360,7 @@ export function Hero() {
         title={modalTitle}
       />
 
-      <Dialog open={docsModalOpen} onOpenChange={setDocsModalOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Список документов</DialogTitle>
-            <DialogDescription>
-              Шаблоны форм вы можете скачать по кнопке «Документы» на главной. Ниже перечень того, что потребуется подготовить.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6 text-sm leading-6">
-            <div>
-              <h3 className="font-semibold mb-2">Скачать шаблоны</h3>
-              <div className="flex flex-col gap-2">
-                {documentTemplates.map((tpl) => (
-                  <a
-                    key={tpl.file}
-                    href={`${runtimeBasePath}/CHEK_LIST/${tpl.file}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-2 hover:bg-gray-50"
-                  >
-                    <span className="font-medium">{tpl.label}</span>
-                    <span className="text-xs text-gray-500">PDF</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Список документов для перехода на АУСН</h3>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Выписка из ЕГРЮЛ/ЕГРИП (оригинал или нотариально заверенная копия)</li>
-                <li>Заявление о применении АУСН (по форме ФНС)</li>
-                <li>Документ, подтверждающий остаточную стоимость основных средств (справка или расчёт)</li>
-                <li>Информация о среднесписочной численности сотрудников (расчёт, табели)</li>
-                <li>Уставные документы (для ООО: устав, учредительный договор и протокол/решение о назначении директора)</li>
-                <li>Паспорт и ИНН руководителя (копии)</li>
-                <li>Свидетельство о постановке на учёт по НДС (если ранее регистрировались на ОСНО)</li>
-                <li>Договор с уполномоченным банком и реквизиты расчётного счёта</li>
-                <li>Доверенность или полномочия на представителя (если подаёт не руководитель)</li>
-              </ul>
-            </div>
-            <p className="text-muted-foreground">
-              После подготовки шаблонов и заполнения всех форм загрузите их в личный кабинет ФНС или представьте в уполномоченный банк.
-            </p>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setDocsModalOpen(false)} variant="secondary">Закрыть</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {docsDialog}
 
       <div
         className="absolute inset-0 z-10"

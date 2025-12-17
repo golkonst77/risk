@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Phone, MessageCircle, Menu, X } from "lucide-react"
 import { useContactForm } from "@/hooks/use-contact-form"
@@ -23,6 +23,7 @@ const MENU_ITEMS = [
 
 export const Header = () => {
   const router = useRouter()
+  const appPathname = usePathname()
   const { openContactForm } = useContactForm()
   const { handleCruiseClick, modalOpen, setModalOpen } = useCruiseClick()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -34,6 +35,7 @@ export const Header = () => {
     vk: ''
   })
   const [isClient, setIsClient] = useState(false)
+  const [currentHash, setCurrentHash] = useState("")
   
   useEffect(() => {
     setIsClient(true)
@@ -56,29 +58,79 @@ export const Header = () => {
     
     loadSettings()
   }, [])
+
+  useEffect(() => {
+    if (!isClient) return
+
+    const updateHash = () => {
+      setCurrentHash(window.location.hash || "")
+    }
+
+    updateHash()
+    window.addEventListener("hashchange", updateHash)
+    window.addEventListener("popstate", updateHash)
+
+    return () => {
+      window.removeEventListener("hashchange", updateHash)
+      window.removeEventListener("popstate", updateHash)
+    }
+  }, [isClient])
   
-  // Используем window.location только на клиенте
-  const pathname = isClient ? window.location.pathname : ''
+  const pathname = appPathname || ""
+  const runtimeBasePath = pathname.startsWith("/ausn") ? "/ausn" : ""
+  const normalizedPath = runtimeBasePath ? pathname.slice(runtimeBasePath.length) || "/" : pathname
   
   // Все пункты меню видны
   const visibleMenuItems = MENU_ITEMS
 
+  const getMenuHref = (item: any) => {
+    if (!runtimeBasePath) return item.href
+    return `${runtimeBasePath}${item.href}`
+  }
+
   const handleMenuClick = (item: any) => (e: React.MouseEvent) => {
     if (item.isAnchor) {
-      if (pathname !== "/") {
+      const hrefHash = (item.href || "").split("#")[1] ? `#${(item.href || "").split("#")[1]}` : ""
+      if (hrefHash) {
+        setCurrentHash(hrefHash)
+      }
+      if (normalizedPath !== "/") {
         e.preventDefault()
-        router.push(item.href)
+        router.push(getMenuHref(item))
       }
     }
   }
 
+  const isActiveMenuItem = (item: any) => {
+    if (!isClient) return false
+
+    if (item.isAnchor) {
+      // Активируем якорь только на главной.
+      if (normalizedPath !== "/") return false
+      const hrefHash = (item.href || "").split("#")[1] ? `#${(item.href || "").split("#")[1]}` : ""
+      if (!hrefHash) return false
+      if (!(currentHash || "")) {
+        return item.id === "technologies"
+      }
+      return (currentHash || "") === hrefHash
+    }
+
+    return normalizedPath === item.href
+  }
+
   const renderMenuItem = (item: any) => {
+    const active = isActiveMenuItem(item)
     return (
       <Link
         key={item.id}
-        href={item.href}
+        href={getMenuHref(item)}
         onClick={handleMenuClick(item)}
-        className="inline-flex items-center justify-center px-5 py-3 text-base font-semibold text-gray-800 bg-gray-100 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200 shadow-sm whitespace-nowrap"
+        className={
+          "inline-flex items-center justify-center px-5 py-3 text-base font-semibold rounded-lg transition-all duration-200 shadow-sm whitespace-nowrap " +
+          (active
+            ? "bg-blue-600 text-white shadow-md"
+            : "text-gray-800 bg-gray-100 hover:bg-blue-600 hover:text-white")
+        }
       >
         {item.title}
       </Link>
@@ -138,9 +190,17 @@ export const Header = () => {
                {visibleMenuItems.map((item) => (
                  <Link
                    key={item.id}
-                   href={item.href}
-                   onClick={() => setMobileMenuOpen(false)}
-                   className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                   href={getMenuHref(item)}
+                   onClick={(e) => {
+                     handleMenuClick(item)(e)
+                     setMobileMenuOpen(false)
+                   }}
+                   className={
+                     "block px-4 py-2 rounded-lg transition-colors " +
+                     (isActiveMenuItem(item)
+                       ? "bg-blue-600 text-white"
+                       : "text-gray-700 hover:bg-gray-100")
+                   }
                  >
                    {item.title}
                  </Link>
