@@ -16,7 +16,7 @@ interface CookieConsentProps {
   ymId?: string
 }
 
-export function CookieConsent({ ymId = '45860892' }: CookieConsentProps) {
+export function CookieConsent({ ymId = '105967457' }: CookieConsentProps) {
   const [showBanner, setShowBanner] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showPolicyModal, setShowPolicyModal] = useState(false)

@@ -64,7 +64,7 @@ const defaultConfig: SiteConfig = {
     overlay: 30
   },
   analytics: {
-    yandexMetrikaId: "45860892",
+    yandexMetrikaId: "105967457",
     enabled: true
   },
   maintenanceMode: false

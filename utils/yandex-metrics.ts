@@ -3,7 +3,7 @@ export const sendYandexMetric = (eventName: string, parameters?: Record<string, 
   try {
     // Проверяем, что Яндекс.Метрика загружена
     if (typeof window !== 'undefined' && (window as any).ym) {
-      const counterId = parseInt(String(process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID || '45860892')) // ID счетчика Яндекс.Метрики
+      const counterId = parseInt(String(process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID || '105967457')) // ID счетчика Яндекс.Метрики
       
       console.log(`📊 Яндекс.Метрика: отправляем событие "${eventName}" с ID ${counterId}`, parameters)
       
@@ -28,11 +28,12 @@ export const sendYandexMetric = (eventName: string, parameters?: Record<string, 
     }
   } catch (error) {
     console.error('📊 Ошибка отправки события в Яндекс.Метрику:', error)
+    const err = error as any
     console.error('📊 Детали ошибки:', {
       eventName,
       parameters,
-      error: error.message,
-      stack: error.stack
+      error: err?.message,
+      stack: err?.stack
     })
   }
 }
@@ -41,4 +42,4 @@ export const sendYandexMetric = (eventName: string, parameters?: Record<string, 
 export const YANDEX_METRICS_EVENTS = {
   QUIZ_COMPLETED: 'quiz_completed',
   QUIZ_TARIFF_COMPLETED: 'quiz_tariff_completed',
-} as const 
+} as const
