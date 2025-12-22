@@ -1,6 +1,6 @@
 "use client"
 
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react"
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react"
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -183,6 +183,7 @@ export const QuizFinalStep = forwardRef<
   ref
 ) {
   const { toast } = useToast()
+  const metrikaQuizCompletedSentRef = useRef(false)
 
   useEffect(() => {
     persistUtmFromUrlOnce()
@@ -306,12 +307,21 @@ export const QuizFinalStep = forwardRef<
         throw new Error(text || `HTTP ${res.status}`)
       }
 
+      console.log("[QuizFinalStep] DEBUG ym:", {
+        hasWindow: typeof window !== "undefined",
+        ymType: typeof (window as any).ym,
+        metrikaQuizCompletedSentRef: metrikaQuizCompletedSentRef.current,
+      })
+
       try {
-        if (typeof window !== "undefined" && (window as any).ym) {
-          ;(window as any).ym(45860892, "reachGoal", "quiz_completed_ausn")
+        if (!metrikaQuizCompletedSentRef.current && typeof window !== "undefined" && (window as any).ym) {
+          metrikaQuizCompletedSentRef.current = true
+          ;(window as any).ym(105967457, "reachGoal", "quiz_completed")
+          console.log("[QuizFinalStep] ym reachGoal fired")
         }
       } catch (e) {
         console.error("[QuizFinalStep] ym reachGoal failed (non-blocking):", e)
+        metrikaQuizCompletedSentRef.current = false
       }
 
       try {

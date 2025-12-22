@@ -540,21 +540,6 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
       setShowThanks(true)
       setWhatsAppAutoSent(whatsappSent)
       
-      // Отправляем цель в Яндекс.Метрику
-      if (typeof window !== 'undefined' && (window as any).ym) {
-        try {
-          (window as any).ym(45860892, 'reachGoal', 'quiz_completed', {
-            phone: phone.trim(),
-            discount: discount,
-            businessType: businessType,
-            coupon: fullCoupon
-          })
-          console.log('✅ [METRIKA] Цель "quiz_completed" отправлена в Яндекс.Метрику')
-        } catch (error) {
-          console.error('❌ [METRIKA] Ошибка отправки цели в Яндекс.Метрику:', error)
-        }
-      }
-      
       // Reset form
       setCurrentStep(0)
       setAnswers([])
