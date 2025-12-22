@@ -13,7 +13,6 @@ import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 import { useContactForm } from "@/hooks/use-contact-form"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowRight, ArrowLeft, Gift, Phone, X } from "lucide-react"
-import { sendYandexMetric, YANDEX_METRICS_EVENTS } from "@/utils/yandex-metrics"
 import { QuizFinalStep, type QuizFinalStepHandle } from "@/components/quiz/QuizFinalStep"
 
 // CSS анимация для мигающей карточки скидки
@@ -478,19 +477,6 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
           // Не прерываем выполнение
         }
       }
-      
-      // Отправляем событие в Яндекс.Метрику
-      try {
-        sendYandexMetric(YANDEX_METRICS_EVENTS.QUIZ_COMPLETED, {
-          discount: discount,
-          business_type: businessType,
-          phone: phone.trim(),
-          coupon: fullCoupon
-        })
-      } catch (error) {
-        console.error('Ошибка отправки в Яндекс.Метрику:', error)
-        // Не критично
-      }
 
       // Отправляем уведомление администратору
       console.log('🚀 [QUIZ] Начинаем отправку уведомления администратору...', {
@@ -754,17 +740,6 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
                       setIsFinalSubmitting(isSubmitting)
                     }}
                     onSuccess={({ email, phone, quizData }) => {
-                      try {
-                        sendYandexMetric(YANDEX_METRICS_EVENTS.QUIZ_COMPLETED, {
-                          discount: quizData?.discount,
-                          business_type: quizData?.businessType,
-                          email,
-                          phone,
-                        })
-                      } catch (error) {
-                        console.error('Ошибка отправки в Яндекс.Метрику:', error)
-                      }
-
                       setShowThanks(true)
 
                       setCurrentStep(0)
