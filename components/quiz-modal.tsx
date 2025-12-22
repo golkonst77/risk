@@ -3,7 +3,7 @@
 // ✅ WhatsApp отправка включена обратно
 // Дата включения: 2025-09-04
 
-import { useState, useEffect } from "react"
+import { useRef, useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,7 @@ import { useContactForm } from "@/hooks/use-contact-form"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowRight, ArrowLeft, Gift, Phone, X } from "lucide-react"
 import { sendYandexMetric, YANDEX_METRICS_EVENTS } from "@/utils/yandex-metrics"
+import { QuizFinalStep, type QuizFinalStepHandle } from "@/components/quiz/QuizFinalStep"
 
 // CSS анимация для мигающей карточки скидки
 const discountCardAnimation = `
@@ -116,7 +117,7 @@ function QuizSidebar({
   getBonusCount,
   bonuses,
   handleSubmit,
-  phone,
+  canSubmit,
   isSubmitting
 }: {
   canProceed: boolean,
@@ -127,7 +128,7 @@ function QuizSidebar({
   getBonusCount: () => number,
   bonuses: string[],
   handleSubmit: () => void,
-  phone: string,
+  canSubmit: boolean,
   isSubmitting: boolean
 }) {
   return (
@@ -167,13 +168,13 @@ function QuizSidebar({
         {isPhoneStep ? (
           <Button
             onClick={handleSubmit}
-            disabled={!phone.trim() || isSubmitting}
-            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white w-full mt-4 py-4 rounded-xl font-bold text-lg shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 border-2 border-orange-400 hover:border-orange-300"
+            disabled={!canSubmit || isSubmitting}
+            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white w-full mt-4 rounded-xl font-bold text-lg shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 border-2 border-orange-400 hover:border-orange-300 whitespace-normal leading-tight text-center min-h-[96px] py-6"
             style={{
               boxShadow: '0 10px 25px rgba(249, 115, 22, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
             }}
           >
-            {isSubmitting ? "Отправляем..." : "🎁 Получить предложение"}
+            {isSubmitting ? "Отправляем..." : "ПОЛУЧИТЬ ПОДАРОК И КУПОН"}
           </Button>
         ) : null}
       </div>
@@ -262,6 +263,14 @@ const getBusinessType = (answers: QuizAnswer[]): "ip" | "ooo" | "both" => {
   return "both"
 }
 
+function mapAusnQuizStateToQuizData(answers: QuizAnswer[], discount: number, businessType: string) {
+  return {
+    answers,
+    discount,
+    businessType,
+  } as any
+}
+
 // Отправка PDF чек-листа (статический файл из public/CHEK_LIST)
 async function sendWhatsAppDocument(phone: string, quiz_result: "ip" | "ooo" | "both", caption: string) {
   console.log('[QUIZ] Начинаем отправку PDF:', { phone, quiz_result, caption });
@@ -323,6 +332,9 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
   const { toast } = useToast()
   const [currentStep, setCurrentStep] = useState(0)
   const [answers, setAnswers] = useState<QuizAnswer[]>([])
+  const finalStepRef = useRef<QuizFinalStepHandle | null>(null)
+  const [canFinalSubmit, setCanFinalSubmit] = useState(false)
+  const [isFinalSubmitting, setIsFinalSubmitting] = useState(false)
   const [phone, setPhone] = useState("")
   const [wantChecklist, setWantChecklist] = useState<boolean>(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -598,6 +610,8 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
 
   const isPhoneStep = currentStep >= questions.length
 
+  const quizData = mapAusnQuizStateToQuizData(answers, calculateDiscount(), getBusinessType(answers))
+
   // Auto-advance for single choice questions
   useEffect(() => {
     if (!isPhoneStep && currentQuestion?.type === "single" && canProceed) {
@@ -742,47 +756,39 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
                     </div>
                   </>
                 ) : (
-                  <div className="flex flex-col h-[600px] min-h-0">
-                    <div className="flex-1 min-h-0 overflow-y-auto px-0 pt-2 pb-0 text-center max-w-lg mx-auto w-full flex flex-col items-stretch justify-start">
-                                             <h2 className="text-2xl font-bold mb-2 text-gray-900">Последний шаг!</h2>
-                       <p className="text-base text-gray-600 mb-4 leading-relaxed">
-                         Оставьте номер телефона и мы отправим персональное предложение со скидкой {" "}
-                         <span className="font-bold text-cyan-500">{calculateDiscount().toLocaleString()} ₽</span>
-                         <br />
-                         <span className="text-sm font-medium text-green-600">Мы свяжемся с вами в ближайшее время!</span>
-                       </p>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        inputMode="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(formatRuPhone(e.target.value))}
-                        placeholder="+7 (___) ___-__-__"
-                        className="text-center text-base py-3 border-2 border-gray-200 focus:border-cyan-400 rounded-2xl shadow-sm w-full"
-                      />
-                      <div className="mb-4">
-                        <div className="flex items-center space-x-2 mt-4">
-                          <Checkbox
-                            id="checklist"
-                            checked={wantChecklist}
-                            onCheckedChange={handleCheckedChange}
-                            className="mt-1 text-green-600 border-2 border-green-300 w-5 h-5"
-                          />
-                          <Label htmlFor="checklist" className="cursor-pointer leading-relaxed text-gray-700">
-                            <span className="text-lg mr-3">🎁</span>
-                            <span className="font-bold text-green-700">Ваш подарок:</span> Чек-лист с полезной информацией для вашего бизнеса
-                          </Label>
-                        </div>
-                      </div>
-                    </div>
-                                         <div className="shrink-0 bg-white pt-2 pb-2">
-                       <div className="bg-gray-50 rounded-2xl p-4 text-center mt-2">
-                         <p className="text-xs font-bold text-gray-900 uppercase tracking-wide">
-                           БЕЗОПАСНО И КОНФИДЕНЦИАЛЬНО
-                         </p>
-                       </div>
-                     </div>
-                  </div>
+                  <QuizFinalStep
+                    ref={finalStepRef}
+                    site="ausn"
+                    quizData={quizData}
+                    uiTexts={{
+                      subtitle: `Оставьте email, и мы отправим персональное коммерческое предложение со скидкой ${calculateDiscount().toLocaleString()} ₽`,
+                    }}
+                    defaultGiftPdfFilename="Kak_vibrat_buh_kompany.pdf"
+                    onStateChange={({ canSubmit, isSubmitting }) => {
+                      setCanFinalSubmit(canSubmit)
+                      setIsFinalSubmitting(isSubmitting)
+                    }}
+                    onSuccess={({ email, phone, quizData }) => {
+                      try {
+                        sendYandexMetric(YANDEX_METRICS_EVENTS.QUIZ_COMPLETED, {
+                          discount: quizData?.discount,
+                          business_type: quizData?.businessType,
+                          email,
+                          phone,
+                        })
+                      } catch (error) {
+                        console.error('Ошибка отправки в Яндекс.Метрику:', error)
+                      }
+
+                      setShowThanks(true)
+
+                      setCurrentStep(0)
+                      setAnswers([])
+                      setCanFinalSubmit(false)
+                      setIsFinalSubmitting(false)
+                      closeContactForm()
+                    }}
+                  />
                 )}
               </div>
 
@@ -795,9 +801,9 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
                 calculateDiscount={calculateDiscount}
                 getBonusCount={getBonusCount}
                 bonuses={bonuses}
-                handleSubmit={handleSubmit}
-                phone={phone}
-                isSubmitting={isSubmitting}
+                handleSubmit={() => finalStepRef.current?.submit()}
+                canSubmit={canFinalSubmit && !showThanks}
+                isSubmitting={isFinalSubmitting || showThanks}
               />
             </div>
           </div>
@@ -812,13 +818,7 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
           <button onClick={() => handleThanksOpenChange(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700"><X className="w-6 h-6" /></button>
           <h2 className="text-2xl font-bold mb-4 text-green-700">Спасибо за уделенное время!</h2>
           <p className="text-base text-gray-700 mb-4">
-            {whatsAppAutoSent
-              ? "Сообщение отправлено в WhatsApp."
-              : "Не удалось отправить сообщение в WhatsApp автоматически."}
-            <br />
-            Мы свяжемся с вами в ближайшее время!
-            <br />
-            Хорошего дня!
+            Коммерческое предложение и подарок отправлены на ваш email, проверьте почту.
           </p>
           {coupon && (
             <div className="bg-gray-100 rounded-xl p-4 mb-4 w-full">
@@ -827,13 +827,6 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
               <Button size="sm" variant="outline" onClick={() => {navigator.clipboard.writeText(coupon)}}>Скопировать</Button>
             </div>
           )}
-          {whatsAppFallbackUrl ? (
-            <Button asChild className="mt-2 bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-2 rounded-xl">
-              <a href={whatsAppFallbackUrl} target="_blank" rel="noopener noreferrer">
-                Открыть WhatsApp и отправить
-              </a>
-            </Button>
-          ) : null}
           <Button onClick={() => handleThanksOpenChange(false)} className="mt-2 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-xl">Закрыть</Button>
         </DialogContent>
       </Dialog>
