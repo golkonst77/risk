@@ -1,16 +1,16 @@
 "use client"
 
-import { Hero } from "@/components/hero"
-import { FAQ } from "@/components/faq"
-import { Calculator } from "@/components/calculator"
-import { Reviews } from "@/components/reviews"
-import { News } from "@/components/news"
-import { Contacts } from "@/components/contacts"
-import { Technologies } from "@/components/technologies"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { useEffect } from "react"
+import { NewHero } from "@/components/homepage/NewHero"
+import { ForWhom } from "@/components/homepage/ForWhom"
+import { CalculatorsShowcase } from "@/components/homepage/CalculatorsShowcase"
+import { HowItWorks } from "@/components/homepage/HowItWorks"
+import { TrustBlock } from "@/components/homepage/TrustBlock"
+import { NextSteps } from "@/components/homepage/NextSteps"
 import { SupportSection } from "@/components/support-section"
+import { Reviews } from "@/components/reviews"
+import { FAQ } from "@/components/faq"
+import { Contacts } from "@/components/contacts"
+import { useEffect } from "react"
 
 export default function HomePage() {
   useEffect(() => {
@@ -32,16 +32,15 @@ export default function HomePage() {
 
   return (
     <main id="home-page" className="min-h-screen">
-      <Hero />
-      <Technologies />
-      <Calculator />
-      <Reviews />
-      <News />
-
-      {/* Полноценный блок поддержки на главной */}
+      <NewHero />
+      <ForWhom />
+      <CalculatorsShowcase />
+      <HowItWorks />
+      <TrustBlock />
+      <NextSteps />
       <SupportSection />
-
       <FAQ />
+      <Reviews />
       <Contacts />
     </main>
   )

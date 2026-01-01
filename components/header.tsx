@@ -11,12 +11,9 @@ import { Logo } from "./logo"
  
 
 const MENU_ITEMS = [
-  { id: 'technologies', title: 'Инструкции', href: '/#technologies', isAnchor: true },
-  { id: 'calculator', title: 'Калькулятор', href: '/#calculator', isAnchor: true },
-  { id: 'regions', title: 'Регионы', href: '/regions', isAnchor: false },
-  { id: 'banks', title: 'Банки', href: '/banks', isAnchor: false },
-  { id: 'news', title: 'Новости', href: '/#news', isAnchor: true },
-  { id: 'support', title: 'Поддержка', href: '/#support', isAnchor: true },
+  { id: 'calculator1', title: 'Калькулятор дробления', href: '/calculator', isAnchor: false },
+  { id: 'calculator2', title: 'Калькулятор самозанятых', href: '/calculator-self-employed', isAnchor: false },
+  { id: 'support', title: 'Поддержка', href: '/support', isAnchor: false },
   { id: 'faq', title: 'FAQ', href: '/#faq', isAnchor: true },
   { id: 'contacts', title: 'Контакты', href: '/#contacts', isAnchor: true },
 ]

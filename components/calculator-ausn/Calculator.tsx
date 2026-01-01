@@ -19,6 +19,7 @@ import {
   checkAUSNEligibility,
   AUSN_CONFIG,
 } from "./calculator-config"
+import { useContactForm } from "@/hooks/use-contact-form"
 
 export function Calculator() {
   const [results, setResults] = useState<ComparisonResults | null>(null)
@@ -166,13 +167,9 @@ export function Calculator() {
   }
 
   // Обработка запроса консультации
+  const { openContactForm } = useContactForm()
   const handleConsultation = () => {
-    // Здесь можно открыть форму контакта или модальное окно
-    // Используем window для прокрутки к контактам
-    const contactsSection = document.getElementById('contacts')
-    if (contactsSection) {
-      contactsSection.scrollIntoView({ behavior: 'smooth' })
-    }
+    openContactForm()
   }
 
   // Заглушка для скачивания PDF

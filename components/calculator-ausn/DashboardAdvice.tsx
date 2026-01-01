@@ -5,6 +5,19 @@ import { DashboardCard } from "./ui/DashboardCard"
 import { Button } from "@/components/ui/button"
 import type { ComparisonResults, EligibilityCheck } from "./types"
 import Link from "next/link"
+import { useContactForm } from "@/hooks/use-contact-form"
+
+function ConsultationButton() {
+  const { openContactForm } = useContactForm()
+  return (
+    <Button 
+      onClick={openContactForm}
+      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+    >
+      Получить консультацию специалиста
+    </Button>
+  )
+}
 
 interface DashboardAdviceProps {
   results: ComparisonResults
@@ -119,11 +132,7 @@ export function DashboardAdvice({ results, eligibility }: DashboardAdviceProps) 
 
           {/* Кнопка консультации */}
           <div className="pt-4">
-            <Link href="/support" passHref>
-              <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                Получить консультацию специалиста
-              </Button>
-            </Link>
+            <ConsultationButton />
           </div>
         </div>
       </DashboardCard>
@@ -170,4 +179,3 @@ export function DashboardAdvice({ results, eligibility }: DashboardAdviceProps) 
     </div>
   )
 }
-

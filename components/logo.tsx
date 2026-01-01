@@ -17,8 +17,8 @@ interface LogoProps {
   className?: string
 }
 
-export function Logo({ siteName = "ПростоБюро АУСН", className = "" }: LogoProps) {
-  const fixedLogoText = "ПростоБюро АУСН"
+export function Logo({ siteName = "ПростоБюро РИСКИ", className = "" }: LogoProps) {
+  const fixedLogoText = "ПростоБюро РИСКИ"
 
   const logoConfig = useMemo<LogoConfig>(() => {
     const cfg: any = siteConfig
@@ -53,14 +53,18 @@ export function Logo({ siteName = "ПростоБюро АУСН", className = "
               unoptimized={true} // Отключаем оптимизацию Next.js для избежания кэширования
             />
           </div>
-          <span className="font-bold text-xl">{fixedLogoText}</span>
+          <span className="font-bold text-xl">
+            ПростоБюро <span className="text-red-600 text-2xl font-extrabold">РИСКИ</span>
+          </span>
         </>
       ) : (
         <>
           <div className="h-12 w-12 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
             <span className="text-white font-bold text-lg">ПБ</span>
           </div>
-          <span className="font-bold text-xl">{fixedLogoText}</span>
+          <span className="font-bold text-xl">
+            ПростоБюро <span className="text-red-600 text-2xl font-extrabold">РИСКИ</span>
+          </span>
         </>
       )}
     </Link>

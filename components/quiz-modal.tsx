@@ -12,8 +12,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 import { useContactForm } from "@/hooks/use-contact-form"
 import { useToast } from "@/hooks/use-toast"
-import { ArrowRight, ArrowLeft, Gift, Phone, X } from "lucide-react"
+import { ArrowRight, ArrowLeft, Gift, Phone, X, CheckCircle2, AlertTriangle, AlertCircle, XCircle } from "lucide-react"
 import { QuizFinalStep, type QuizFinalStepHandle } from "@/components/quiz/QuizFinalStep"
+import Link from "next/link"
 
 // CSS анимация для мигающей карточки скидки
 const discountCardAnimation = `
@@ -43,41 +44,46 @@ interface QuizAnswer {
 const questions = [
   {
     id: 1,
-    title: "Форма собственности",
+    title: "Как устроен ваш бизнес?",
     type: "single" as const,
     options: [
-      { value: "ooo", label: "ООО" },
-      { value: "ip", label: "ИП" },
+      { value: "0", label: "Одна компания / ИП, без дробления и сложных схем", score: 0 },
+      { value: "1", label: "Несколько ИП / ООО, но с разными направлениями и клиентами", score: 1 },
+      { value: "2", label: "Несколько ИП / ООО с пересекающимися клиентами или процессами", score: 2 },
+      { value: "3", label: "Несколько ИП / ООО, фактически один бизнес", score: 3 },
     ],
   },
   {
     id: 2,
-    title: "Размер годовой выручки",
+    title: "Как вы работаете с людьми?",
     type: "single" as const,
     options: [
-      { value: "revenue_lt_60", label: "До 60 млн руб" },
-      { value: "revenue_60_272_5", label: "От 60 до 272,5 млн руб (НДС 5%)" },
-      { value: "revenue_272_5_490_5", label: "От 272,5 до 490,5 млн руб (НДС 7%)" },
-      { value: "revenue_gt_490_5", label: "Более 490,5 млн руб" },
+      { value: "0", label: "Штатные сотрудники, всё оформлено по ТК", score: 0 },
+      { value: "1", label: "Подрядчики / самозанятые, но нерегулярно", score: 1 },
+      { value: "2", label: "Самозанятые на постоянной основе", score: 2 },
+      { value: "3", label: "Самозанятые фактически заменяют сотрудников", score: 3 },
     ],
   },
   {
     id: 3,
-    title: "Количество работников",
+    title: "Есть ли финансовые и организационные пересечения?",
     type: "single" as const,
     options: [
-      { value: "emp_le_5", label: "До 5 человек (включительно)" },
-      { value: "emp_gt_5", label: "Более 5 человек" },
+      { value: "0", label: "Нет, всё разделено (деньги, управление, документы)", score: 0 },
+      { value: "1", label: "Есть частичные пересечения", score: 1 },
+      { value: "2", label: "Деньги, управление или клиенты пересекаются", score: 2 },
+      { value: "3", label: "Всё общее, различия формальные", score: 3 },
     ],
   },
   {
     id: 4,
-    title: "Какой процент от доходов составляют ваши расходы?",
+    title: "Были ли уже вопросы от налоговой?",
     type: "single" as const,
     options: [
-      { value: "expenses_lt_30", label: "До 30%" },
-      { value: "expenses_30_70", label: "30-70%" },
-      { value: "expenses_gt_70", label: "Более 70%" },
+      { value: "0", label: "Нет, никогда", score: 0 },
+      { value: "1", label: "Были требования о пояснениях", score: 1 },
+      { value: "3", label: "Была проверка или доначисления", score: 3 },
+      { value: "1_alt", label: "Пока не знаю / недавно начали работать", score: 1 },
     ],
   },
 ]
@@ -134,29 +140,32 @@ function QuizSidebar({
          <div className="w-80 bg-amber-100 px-6 py-6 border-l border-amber-200 flex flex-col justify-between items-center">
       <style dangerouslySetInnerHTML={{ __html: discountCardAnimation }} />
       <div className="w-full flex flex-col items-center">
-        <div className={`rounded-2xl flex flex-col items-center mb-3 min-h-[80px] max-h-[100px] p-2 w-full ${calculateDiscount() > 0 ? 'discount-card-animate' : 'bg-white shadow-md'}`}>
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-cyan-100 mb-1">
-            <span className="text-xl text-cyan-500">₽</span>
+        <div className={`rounded-2xl flex flex-col items-center mb-4 min-h-[100px] p-4 w-full ${calculateDiscount() > 0 ? 'discount-card-animate bg-cyan-100' : 'bg-cyan-100 shadow-md'}`}>
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-cyan-200 mb-2">
+            <span className="text-2xl text-cyan-600 font-bold">₽</span>
           </div>
-          <div className="text-xs text-gray-500 mb-0.5 leading-tight">Ваша скидка</div>
-          <div className="text-lg font-bold text-cyan-500 mb-0.5 leading-tight break-words max-w-[90%] text-center">{calculateDiscount().toLocaleString()} ₽</div>
-          <div className="text-[10px] text-gray-400 leading-tight text-center break-words max-w-[90%] whitespace-pre-line">на первый месяц\nобслуживания</div>
+          <div className="text-xs text-gray-600 mb-1 leading-tight font-medium">Ваша скидка</div>
+          <div className="text-xl font-bold text-cyan-600 mb-1 leading-tight break-words max-w-[90%] text-center">{calculateDiscount().toLocaleString()} ₽</div>
+          <div className="text-[11px] text-gray-500 leading-tight text-center break-words max-w-[90%] whitespace-pre-line font-medium">на первый месяц\nобслуживания</div>
         </div>
-        <div className="bg-white rounded-2xl shadow-md flex flex-col items-center p-3 w-full">
-          <div className="text-sm font-bold mb-1 text-gray-900">Бонусы в подарок:</div>
-          <div className="flex gap-1 mt-1 justify-center items-center w-full">
+        <div className="bg-white rounded-2xl shadow-md flex flex-col items-center p-4 w-full mb-4">
+          <div className="text-sm font-bold mb-3 text-gray-900">Бонусы в подарок:</div>
+          <div className="flex gap-3 justify-center items-center w-full">
             {bonuses.map((bonus, idx) => (
-                             <div
-                 key={bonus}
-                 className="flex flex-col items-center bg-green-200 rounded-xl shadow min-w-[120px] max-w-[120px] min-h-[100px] max-h-[100px] justify-center p-1"
-                 style={{ flex: '0 0 120px' }}
-               >
-                <span
-                  className={`w-8 h-8 flex items-center justify-center rounded-full text-white text-xl mb-1 ${idx === 0 ? 'bg-orange-500' : 'bg-cyan-500'}`}
+              <div
+                key={bonus}
+                className="flex flex-col items-center rounded-xl shadow-md min-w-[120px] max-w-[120px] min-h-[100px] max-h-[100px] justify-center p-3"
+                style={{ 
+                  flex: '0 0 120px',
+                  backgroundColor: idx === 0 ? '#fef3c7' : '#dbeafe' // желтоватый для первого, голубоватый для второго
+                }}
+              >
+                <div
+                  className={`w-10 h-10 flex items-center justify-center rounded-full text-white text-lg mb-2 font-bold ${idx === 0 ? 'bg-orange-500' : 'bg-blue-500'}`}
                 >
                   {idx === 0 ? '🎁' : '💡'}
-                </span>
-                <span className="text-xs text-gray-900 text-center font-bold leading-tight">
+                </div>
+                <span className="text-xs text-gray-900 text-center font-bold leading-tight px-1">
                   {bonus}
                 </span>
               </div>
@@ -168,12 +177,12 @@ function QuizSidebar({
           <Button
             onClick={handleSubmit}
             disabled={!canSubmit || isSubmitting}
-            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white w-full mt-4 rounded-xl font-bold text-lg shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 border-2 border-orange-400 hover:border-orange-300 whitespace-normal leading-tight text-center min-h-[96px] py-6"
+            className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white w-full mt-2 rounded-xl font-bold text-base shadow-2xl hover:shadow-3xl transform hover:scale-[1.02] transition-all duration-300 border-2 border-orange-400 hover:border-orange-300 whitespace-normal leading-tight text-center min-h-[80px] py-5 uppercase tracking-wide"
             style={{
               boxShadow: '0 10px 25px rgba(249, 115, 22, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
             }}
           >
-            {isSubmitting ? "Отправляем..." : "ПОЛУЧИТЬ ПОДАРОК И КУПОН"}
+            {isSubmitting ? "Отправляем..." : "Получить подарок и купон"}
           </Button>
         ) : null}
       </div>
@@ -242,7 +251,80 @@ async function sendWhatsAppMessage(phone: string, message: string) {
   }
 }
 
-// Определяем тип бизнеса на основе ответов
+// Подсчитываем сумму баллов из ответов
+const calculateRiskScore = (answers: QuizAnswer[]): number => {
+  let totalScore = 0
+  answers.forEach(answer => {
+    const question = questions.find(q => q.id === answer.questionId)
+    if (!question) return
+    
+    const answerValue = Array.isArray(answer.answer) ? answer.answer[0] : answer.answer
+    const option = question.options.find(opt => opt.value === answerValue)
+    if (option && 'score' in option) {
+      totalScore += (option as any).score as number
+    }
+  })
+  return totalScore
+}
+
+// Определяем уровень риска на основе суммы баллов
+const getRiskLevel = (score: number): { level: string, label: string, color: string, bgColor: string, textColor: string, borderColor: string, description: string, cta: string, ctaLink: string, icon: any } => {
+  if (score <= 2) {
+    return {
+      level: "low",
+      label: "Низкий риск",
+      color: "green",
+      bgColor: "bg-green-50",
+      textColor: "text-green-700",
+      borderColor: "border-green-200",
+      description: "Явных признаков налоговых рисков не видно. Тем не менее, при росте бизнеса ситуация может меняться.",
+      cta: "Пройти полный калькулятор",
+      ctaLink: "/calculator",
+      icon: CheckCircle2
+    }
+  } else if (score <= 5) {
+    return {
+      level: "moderate",
+      label: "Умеренный риск",
+      color: "yellow",
+      bgColor: "bg-yellow-50",
+      textColor: "text-yellow-700",
+      borderColor: "border-yellow-200",
+      description: "Есть отдельные моменты, на которые ФНС может обратить внимание.",
+      cta: "Проверить схему подробнее",
+      ctaLink: "/calculator",
+      icon: AlertTriangle
+    }
+  } else if (score <= 8) {
+    return {
+      level: "elevated",
+      label: "Повышенный риск",
+      color: "orange",
+      bgColor: "bg-orange-50",
+      textColor: "text-orange-700",
+      borderColor: "border-orange-200",
+      description: "Ваша модель содержит признаки, которые часто анализируются при проверках.",
+      cta: "Пройти оба калькулятора",
+      ctaLink: "/calculator",
+      icon: AlertCircle
+    }
+  } else {
+    return {
+      level: "high",
+      label: "Высокий риск",
+      color: "red",
+      bgColor: "bg-red-50",
+      textColor: "text-red-700",
+      borderColor: "border-red-200",
+      description: "Схема во многом совпадает с типовыми ситуациями, по которым ФНС доначисляет налоги.",
+      cta: "Получить консультацию",
+      ctaLink: "#",
+      icon: XCircle
+    }
+  }
+}
+
+// Определяем тип бизнеса на основе ответов (для обратной совместимости)
 const getBusinessType = (answers: QuizAnswer[]): "ip" | "ooo" | "both" => {
   const businessTypeAnswer = answers.find(a => a.questionId === 1)?.answer
   if (!businessTypeAnswer) return "both"
@@ -327,9 +409,19 @@ async function sendWhatsAppDocument(phone: string, quiz_result: "ip" | "ooo" | "
 }
 
 export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange?: (open: boolean) => void } = {}) {
-  const { isOpen, closeContactForm } = useContactForm()
+  const { isOpen, closeContactForm, startAtFinalStep, openContactForm } = useContactForm()
   const { toast } = useToast()
   const [currentStep, setCurrentStep] = useState(0)
+  
+  // При открытии модалки, если startAtFinalStep = true, переходим сразу на финальный шаг
+  useEffect(() => {
+    if (isOpen && startAtFinalStep) {
+      setCurrentStep(questions.length)
+    } else if (!isOpen) {
+      setCurrentStep(0)
+      setAnswers([])
+    }
+  }, [isOpen, startAtFinalStep])
   const [answers, setAnswers] = useState<QuizAnswer[]>([])
   const finalStepRef = useRef<QuizFinalStepHandle | null>(null)
   const [canFinalSubmit, setCanFinalSubmit] = useState(false)
@@ -351,8 +443,21 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
     }
   }
 
-  const totalSteps = questions.length + 1 // +1 for phone step
-  const progress = ((currentStep + 1) / totalSteps) * 100
+  const currentQuestion = currentStep < questions.length ? questions[currentStep] : null
+  const currentAnswer = currentQuestion ? answers.find((a) => a.questionId === currentQuestion?.id) : null
+  const canProceed = Boolean(
+    currentAnswer && (Array.isArray(currentAnswer.answer) ? currentAnswer.answer.length > 0 : currentAnswer.answer)
+  ) || false
+
+  const isResultStep = false // Убираем экран результата, сразу переходим на финальную страницу
+  const isPhoneStep = currentStep >= questions.length
+  
+  // Рассчитываем результат квиза
+  const riskScore = calculateRiskScore(answers)
+  const riskLevel = getRiskLevel(riskScore)
+
+  const totalSteps = questions.length + 1 // +1 for final step
+  const progress = isPhoneStep ? 100 : ((currentStep + 1) / totalSteps) * 100
 
   const calculateDiscount = () => {
     // Каждый завершенный шаг дает 2500 рублей скидки
@@ -385,13 +490,23 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
 
   const handleNext = () => {
     if (currentStep < questions.length) {
-      setCurrentStep(currentStep + 1)
+      const nextStep = currentStep + 1
+      setCurrentStep(nextStep)
+      // Если ответили на все вопросы, автоматически переходим на финальную страницу
+      if (nextStep === questions.length && answers.length === questions.length) {
+        setCurrentStep(questions.length) // Переходим на финальную страницу
+      }
     }
   }
 
   const handleBack = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
+      // Если на финальном шаге, возвращаемся к последнему вопросу
+      if (isPhoneStep) {
+        setCurrentStep(questions.length - 1)
+      } else {
+        setCurrentStep(currentStep - 1)
+      }
     }
   }
 
@@ -573,14 +688,6 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
     }
   }
 
-  const currentQuestion = questions[currentStep]
-  const currentAnswer = answers.find((a) => a.questionId === currentQuestion?.id)
-  const canProceed = Boolean(
-    currentAnswer && (Array.isArray(currentAnswer.answer) ? currentAnswer.answer.length > 0 : currentAnswer.answer)
-  ) || false
-
-  const isPhoneStep = currentStep >= questions.length
-
   const quizData = mapAusnQuizStateToQuizData(answers, calculateDiscount(), getBusinessType(answers))
 
   // Auto-advance for single choice questions
@@ -617,7 +724,7 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
       <Dialog open={!!(open !== undefined ? open : isOpen)} onOpenChange={onOpenChange || closeContactForm}>
         <DialogTitle className="sr-only">Квиз для получения скидки</DialogTitle>
         <DialogDescription className="sr-only">Пройдите квиз, чтобы получить персональную скидку на бухгалтерские услуги</DialogDescription>
-        <DialogContent className="max-w-4xl h-[90vh] max-h-[800px] p-0 overflow-hidden border-0 shadow-2xl" style={{
+        <DialogContent className="max-w-6xl h-[90vh] max-h-[800px] p-0 overflow-hidden border-0 shadow-2xl" style={{
            backgroundImage: 'url("/quiz-background.jpg")',
            backgroundSize: 'cover',
            backgroundPosition: 'center',
@@ -630,19 +737,19 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
             {/* Header */}
             <div className="bg-white px-12 py-8 text-center border-b border-gray-100">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                Пройдите короткий опрос и получите подарок и бонусы
+                Есть ли у вас налоговые риски?
               </h1>
-              <p className="text-gray-500">Всего 4 вопроса — 2 минуты вашего времени</p>
+              <p className="text-gray-500">Ответьте на 4 вопроса и узнайте, есть ли у вашей схемы признаки, на которые обычно обращает внимание ФНС</p>
             </div>
 
             <div className="flex flex-1 overflow-hidden">
               {/* Left side - Questions */}
                              <div className="flex-1 px-12 py-8 flex flex-col bg-amber-50">
                 {/* Progress */}
-                <div className="mb-12">
+                <div className="mb-6">
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-sm text-gray-400">
-                      Шаг {currentStep + 1} из {totalSteps}
+                      {isPhoneStep ? "Контактные данные" : `Шаг ${currentStep + 1} из ${questions.length}`}
                     </span>
                     <span className="text-sm font-medium text-cyan-500">{Math.round(progress)}%</span>
                   </div>
@@ -655,7 +762,44 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
                 </div>
 
                 {/* Question or Phone Step */}
-                {!isPhoneStep ? (
+                {isPhoneStep ? (
+                  <div key="final-step" className="flex flex-col px-0 py-0 w-full">
+                    <QuizFinalStep
+                      key={`final-step-${currentStep}`}
+                      ref={finalStepRef}
+                      site="ausn"
+                      quizData={quizData}
+                      uiTexts={{
+                        subtitle: `Оставьте email, и мы отправим персональное коммерческое предложение со скидкой ${calculateDiscount().toLocaleString()} ₽`,
+                      }}
+                      defaultGiftPdfFilename="Kak_vibrat_buh_kompany.pdf"
+                      onStateChange={({ canSubmit, isSubmitting }) => {
+                        setCanFinalSubmit(canSubmit)
+                        setIsFinalSubmitting(isSubmitting)
+                      }}
+                      onSuccess={({ email, phone, quizData }) => {
+                        setShowThanks(true)
+
+                        setCurrentStep(0)
+                        setAnswers([])
+                        setCanFinalSubmit(false)
+                        setIsFinalSubmitting(false)
+                        closeContactForm()
+                      }}
+                    />
+                    {/* Кнопка "Назад" на финальном шаге */}
+                    <div className="mt-2">
+                      <Button
+                        variant="ghost"
+                        onClick={() => setCurrentStep(questions.length - 1)}
+                        className="flex items-center text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-lg text-sm"
+                      >
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+                        Назад
+                      </Button>
+                    </div>
+                  </div>
+                ) : currentQuestion ? (
                   <>
                     <div className="flex flex-col px-0 py-0 overflow-y-auto max-h-[60vh]">
                       <h2 className="text-2xl font-bold mb-6 mt-2 text-gray-900 leading-tight">{currentQuestion.title}</h2>
@@ -726,33 +870,10 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
                       </Button>
                     </div>
                   </>
-                ) : (
-                  <QuizFinalStep
-                    ref={finalStepRef}
-                    site="ausn"
-                    quizData={quizData}
-                    uiTexts={{
-                      subtitle: `Оставьте email, и мы отправим персональное коммерческое предложение со скидкой ${calculateDiscount().toLocaleString()} ₽`,
-                    }}
-                    defaultGiftPdfFilename="Kak_vibrat_buh_kompany.pdf"
-                    onStateChange={({ canSubmit, isSubmitting }) => {
-                      setCanFinalSubmit(canSubmit)
-                      setIsFinalSubmitting(isSubmitting)
-                    }}
-                    onSuccess={({ email, phone, quizData }) => {
-                      setShowThanks(true)
-
-                      setCurrentStep(0)
-                      setAnswers([])
-                      setCanFinalSubmit(false)
-                      setIsFinalSubmitting(false)
-                      closeContactForm()
-                    }}
-                  />
-                )}
+                ) : null}
               </div>
 
-              {/* Right side - Discount & Bonuses */}
+              {/* Right side - Discount & Bonuses (показываем всегда, включая финальный шаг) */}
               <QuizSidebar
                 canProceed={canProceed}
                 handleNext={handleNext}

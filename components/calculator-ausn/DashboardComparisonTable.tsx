@@ -51,11 +51,10 @@ export function DashboardComparisonTable({ results }: DashboardComparisonTablePr
     alert('Экспорт в PDF будет доступен в ближайшее время')
   }
 
+  const { openContactForm } = useContactForm()
+  
   const handleConsultation = () => {
-    const contactsSection = document.getElementById('contacts')
-    if (contactsSection) {
-      contactsSection.scrollIntoView({ behavior: 'smooth' })
-    }
+    openContactForm()
   }
 
   const toggleExpand = (id: string) => {
