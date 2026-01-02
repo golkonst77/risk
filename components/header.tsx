@@ -158,16 +158,7 @@ export const Header = () => {
           </ul>
         </nav>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Открыть меню"
-        >
-          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
-
-        {/* Right side widgets */}
+        {/* Right side widgets - Desktop */}
         <div className="hidden lg:flex items-center gap-3">
           {/* Контакты: телефон */}
           <a
@@ -186,13 +177,22 @@ export const Header = () => {
             Получить консультацию
           </Button>
         </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors z-50"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Открыть меню"
+        >
+          {mobileMenuOpen ? <X className="h-6 w-6 text-gray-800" /> : <Menu className="h-6 w-6 text-gray-800" />}
+        </button>
       </div>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-t">
+        <div className="lg:hidden bg-white border-t shadow-lg fixed top-16 md:top-20 left-0 right-0 z-40 max-h-[calc(100vh-4rem)] md:max-h-[calc(100vh-5rem)] overflow-y-auto">
           <div className="container mx-auto px-4 py-4">
-                         <nav className="space-y-2">
+            <nav className="space-y-2">
                {visibleMenuItems.map((item) => (
                  <Link
                    key={item.id}

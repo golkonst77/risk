@@ -7,12 +7,22 @@ import { useEffect, useState } from "react"
 
 export function NewHero() {
   const [basePath, setBasePath] = useState('/risk')
+  const [imageUrl, setImageUrl] = useState('/risk/Main1.jpg')
   
   useEffect(() => {
     // Определяем basePath из window.location для статического экспорта
     if (typeof window !== 'undefined') {
       const path = window.location.pathname
-      setBasePath(path.startsWith('/risk') ? '/risk' : '')
+      const bp = path.startsWith('/risk') ? '/risk' : ''
+      setBasePath(bp)
+      
+      // Проверяем поддержку WebP и формируем URL
+      const supportsWebP = document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0
+      if (supportsWebP) {
+        setImageUrl(`${bp}/Main1.webp`)
+      } else {
+        setImageUrl(`${bp}/Main1.jpg`)
+      }
     }
   }, [])
   
@@ -22,8 +32,9 @@ export function NewHero() {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('${basePath}/Main1.webp'), url('${basePath}/Main1.jpg')`,
+          backgroundImage: `url('${imageUrl}'), url('${basePath}/Main1.jpg')`,
           filter: "brightness(1.3) blur(2px)",
+          WebkitFilter: "brightness(1.3) blur(2px)", // Для Safari на iOS
         }}
       />
       {/* Дополнительное осветление через overlay */}
@@ -50,24 +61,24 @@ export function NewHero() {
             <span className="font-semibold">дробление бизнеса и работа с самозанятыми</span> — за 2–3 минуты
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Link href="/calculator">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 px-2 sm:px-0">
+            <Link href="/calculator" className="w-full sm:w-auto">
               <Button 
                 size="lg" 
-                className="w-full sm:w-auto px-10 py-7 text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl hover:shadow-2xl transition-all"
+                className="w-full sm:w-auto px-4 sm:px-10 py-5 sm:py-7 text-base sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl hover:shadow-2xl transition-all whitespace-normal"
               >
-                <Calculator className="mr-2 h-6 w-6" />
-                Проверить риск дробления бизнеса
+                <Calculator className="mr-2 h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+                <span className="text-center">Проверить риск дробления бизнеса</span>
               </Button>
             </Link>
             
-            <Link href="/calculator-self-employed">
+            <Link href="/calculator-self-employed" className="w-full sm:w-auto">
               <Button 
                 size="lg" 
-                className="w-full sm:w-auto px-10 py-7 text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl hover:shadow-2xl transition-all"
+                className="w-full sm:w-auto px-4 sm:px-10 py-5 sm:py-7 text-base sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl hover:shadow-2xl transition-all whitespace-normal"
               >
-                <Users className="mr-2 h-6 w-6" />
-                Проверить риск по самозанятым
+                <Users className="mr-2 h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+                <span className="text-center">Проверить риск по самозанятым</span>
               </Button>
             </Link>
           </div>

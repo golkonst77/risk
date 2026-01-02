@@ -20,7 +20,7 @@ export function NextSteps() {
               Калькулятор показывает риск, но не заменяет анализ документов.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
+          <CardContent className="text-center px-4 sm:px-6">
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
               <div className="flex items-center gap-2 text-blue-100">
                 <Clock className="h-5 w-5" />
@@ -37,14 +37,16 @@ export function NextSteps() {
               </div>
             </div>
 
-            <Button
-              onClick={handleCruiseClick}
-              size="lg"
-              className="bg-white text-blue-600 hover:bg-blue-50 font-bold text-lg px-8 py-6 shadow-xl hover:shadow-2xl transition-all"
-            >
-              Получить консультацию эксперта
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            <div className="flex justify-center">
+              <Button
+                onClick={handleCruiseClick}
+                size="lg"
+                className="w-full sm:w-auto bg-white text-blue-600 hover:bg-blue-50 font-bold text-base sm:text-lg px-4 sm:px-8 py-5 sm:py-6 shadow-xl hover:shadow-2xl transition-all whitespace-normal"
+              >
+                <span className="text-center">Получить консультацию эксперта</span>
+                <ArrowRight className="ml-2 h-5 w-5 flex-shrink-0" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
