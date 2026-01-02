@@ -24,7 +24,7 @@ export function NextSteps() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
               <div className="flex items-center gap-2 text-blue-100">
                 <Clock className="h-5 w-5" />
-                <span className="font-semibold">60 минут</span>
+                <span className="font-semibold">30 минут</span>
               </div>
               <div className="hidden sm:block text-blue-200">•</div>
               <div className="flex items-center gap-2 text-blue-100">

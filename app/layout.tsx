@@ -8,6 +8,7 @@ import { ContactForm } from "@/components/contact-form"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "sonner"
 import { AusnBlobButton } from "@/components/AusnBlobButton"
+import { AusnBlobButtonAusn } from "@/components/AusnBlobButtonAusn"
 import { CookieConsent } from "@/components/cookie-consent"
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] })
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body className={inter.className}>
           <Header />
           <AusnBlobButton />
+          <AusnBlobButtonAusn />
           <main className="pt-16 md:pt-20">
             {children}
           </main>
