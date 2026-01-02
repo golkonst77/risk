@@ -71,21 +71,16 @@ export function RiskCalculatorResults({ answers, onReset }: RiskCalculatorResult
       {/* Основной результат */}
       <Card className={`${config.bgColor} ${config.borderColor} border-2`}>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Icon className={`h-8 w-8 ${config.textColor}`} />
-              <div>
-                <CardTitle className={`text-2xl ${config.textColor}`}>
-                  Уровень риска: {config.label}
-                </CardTitle>
-                <CardDescription className="text-base mt-2">
-                  {config.description}
-                </CardDescription>
-              </div>
+          <div className="flex items-center gap-3">
+            <Icon className={`h-8 w-8 ${config.textColor}`} />
+            <div className="flex-1">
+              <CardTitle className={`text-2xl ${config.textColor}`}>
+                Уровень риска: {config.label} {result.totalPercent}%
+              </CardTitle>
+              <CardDescription className="text-base mt-2">
+                {config.description}
+              </CardDescription>
             </div>
-            <Badge variant="outline" className={`text-lg px-4 py-2 ${config.textColor} ${config.borderColor}`}>
-              {result.totalPercent}%
-            </Badge>
           </div>
         </CardHeader>
         <CardContent>
