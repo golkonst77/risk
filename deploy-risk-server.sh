@@ -18,7 +18,7 @@ else
     cd $APP_DIR
     git fetch
     git checkout $BRANCH
-    git pull origin $BRANCH
+    git reset --hard origin/$BRANCH
 fi
 
 cd $APP_DIR
