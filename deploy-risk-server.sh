@@ -24,7 +24,7 @@ fi
 cd $APP_DIR
 
 echo "[INFO] Установка зависимостей..."
-npm install
+npm install --legacy-peer-deps
 
 echo "[INFO] Сборка проекта..."
 npm run build
