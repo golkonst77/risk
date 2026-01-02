@@ -3,15 +3,19 @@
 import { Button } from "@/components/ui/button"
 import { Calculator, Users, Shield, CheckCircle2 } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 export function NewHero() {
+  const pathname = usePathname()
+  const basePath = pathname?.startsWith('/risk') ? '/risk' : ''
+  
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4 md:px-8">
       {/* Фоновое изображение с осветлением и размытием */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "url('/Main1.webp'), url('/Main1.jpg')",
+          backgroundImage: `url('${basePath}/Main1.webp'), url('${basePath}/Main1.jpg')`,
           filter: "brightness(1.3) blur(2px)",
         }}
       />
