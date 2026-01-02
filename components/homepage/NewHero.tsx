@@ -3,11 +3,18 @@
 import { Button } from "@/components/ui/button"
 import { Calculator, Users, Shield, CheckCircle2 } from "lucide-react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export function NewHero() {
-  const pathname = usePathname()
-  const basePath = pathname?.startsWith('/risk') ? '/risk' : ''
+  const [basePath, setBasePath] = useState('/risk')
+  
+  useEffect(() => {
+    // Определяем basePath из window.location для статического экспорта
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname
+      setBasePath(path.startsWith('/risk') ? '/risk' : '')
+    }
+  }, [])
   
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4 md:px-8">
