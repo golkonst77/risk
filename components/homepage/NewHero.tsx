@@ -11,7 +11,7 @@ export function NewHero() {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "url('/Main1.jpg')",
+          backgroundImage: "url('/Main1.webp'), url('/Main1.jpg')",
           filter: "brightness(1.3) blur(2px)",
         }}
       />
