@@ -294,10 +294,19 @@ export const QuizFinalStep = forwardRef<
         giftPdfFilename,
       }
 
-      const res = await fetch("/api/quiz-lead", {
+      // Отправляем данные квиза на внешний API
+      const quizLeadUrl = process.env.NEXT_PUBLIC_QUIZ_LEAD_URL || 
+        (process.env.NODE_ENV === "development" 
+          ? "http://localhost:3001/api/quiz-lead" 
+          : "https://prostoburo.com/api/quiz-lead")
+      
+      const res = await fetch(quizLeadUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(process.env.NEXT_PUBLIC_QUIZ_LEAD_KEY
+            ? { "x-quiz-proxy-key": String(process.env.NEXT_PUBLIC_QUIZ_LEAD_KEY) }
+            : {}),
         },
         body: JSON.stringify(payload),
       })

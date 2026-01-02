@@ -31,39 +31,52 @@ export function CouponUsage({ onCouponUsed, className = "" }: CouponUsageProps) 
 
     setLoading(true)
     try {
-      const response = await fetch('/api/coupons', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          code: couponCode.trim()
+      // В статическом режиме купоны не сохраняются на сервере
+      // Можно добавить внешний API для проверки купонов в будущем
+      const couponApiUrl = process.env.NEXT_PUBLIC_COUPON_API_URL
+      
+      if (couponApiUrl) {
+        // Если настроен внешний API для купонов
+        const response = await fetch(couponApiUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: couponCode.trim()
+          })
         })
-      })
 
-      const result = await response.json()
+        const result = await response.json()
 
-      if (response.ok) {
-        setSuccess(true)
-        toast({
-          title: "Купон использован! 🎉",
-          description: `Купон ${couponCode} успешно отмечен как использованный`,
-        })
-        
-        if (onCouponUsed) {
-          onCouponUsed(couponCode)
+        if (response.ok) {
+          setSuccess(true)
+          toast({
+            title: "Купон использован! 🎉",
+            description: `Купон ${couponCode} успешно отмечен как использованный`,
+          })
+          
+          if (onCouponUsed) {
+            onCouponUsed(couponCode)
+          }
+          
+          setTimeout(() => {
+            setCouponCode("")
+            setSuccess(false)
+          }, 3000)
+        } else {
+          toast({
+            title: "Ошибка",
+            description: result.error || "Купон не найден или уже использован",
+            variant: "destructive",
+          })
         }
-        
-        // Очищаем поле через 3 секунды
-        setTimeout(() => {
-          setCouponCode("")
-          setSuccess(false)
-        }, 3000)
       } else {
+        // В статическом режиме просто показываем сообщение
         toast({
-          title: "Ошибка",
-          description: result.error || "Купон не найден или уже использован",
-          variant: "destructive",
+          title: "Информация",
+          description: "В статическом режиме проверка купонов недоступна. Свяжитесь с нами для активации купона.",
+          variant: "default",
         })
       }
     } catch (error) {

@@ -12,10 +12,32 @@ export function MaintenancePage() {
   const [settings, setSettings] = useState({ phone: '', email: '', telegram: '', vk: '' })
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then(res => res.json())
-      .then(data => setSettings(data))
-      .catch(() => {})
+    // Загружаем настройки из статического JSON
+    const loadSettings = async () => {
+      try {
+        const siteConfigModule = await import('@/data/site-config.json')
+        const config = siteConfigModule.default || siteConfigModule
+        if (config && config.contacts) {
+          setSettings({
+            phone: config.contacts.phone || '+7 (953) 330-17-77',
+            email: config.contacts.email || 'urist40@gmail.com',
+            telegram: config.contacts.telegram || '@prostoburo',
+            vk: config.contacts.vk || 'vk.com/buh_urist'
+          })
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки настроек:', error)
+        // Fallback значения
+        setSettings({
+          phone: '+7 (953) 330-17-77',
+          email: 'urist40@gmail.com',
+          telegram: '@prostoburo',
+          vk: 'vk.com/buh_urist'
+        })
+      }
+    }
+    
+    loadSettings()
   }, [])
 
   return (

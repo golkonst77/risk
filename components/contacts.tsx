@@ -23,10 +23,44 @@ export function Contacts() {
   const { handleCruiseClick } = useCruiseClick()
 
   useEffect(() => {
-    fetch('/api/settings')
-      .then(res => res.json())
-      .then(data => setSettings(data))
-      .catch(err => console.error('Ошибка загрузки настроек:', err))
+    // Загружаем настройки из статического JSON
+    const loadSettings = async () => {
+      try {
+        const siteConfigModule = await import('@/data/site-config.json')
+        const config = siteConfigModule.default || siteConfigModule
+        if (config && config.contacts) {
+          setSettings({
+            phone: config.contacts.phone || '+7953 330-17-77',
+            email: config.contacts.email || 'urist40@gmail.com',
+            address: config.contacts.address || 'Калуга, Дзержинского 37, офис 20',
+            telegram: config.contacts.telegram || '@prostoburo',
+            vk: config.contacts.vk || 'vk.com/buh_urist',
+            working_hours: {
+              monday_friday: config.workingHours?.mondayFriday || '9:00 - 18:00',
+              saturday: config.workingHours?.saturday || 'По согласованию',
+              sunday: config.workingHours?.sunday || 'Выходной'
+            }
+          })
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки настроек:', error)
+        // Fallback значения
+        setSettings({
+          phone: '+7953 330-17-77',
+          email: 'urist40@gmail.com',
+          address: 'Калуга, Дзержинского 37, офис 20',
+          telegram: '@prostoburo',
+          vk: 'vk.com/buh_urist',
+          working_hours: {
+            monday_friday: '9:00 - 18:00',
+            saturday: 'По согласованию',
+            sunday: 'Выходной'
+          }
+        })
+      }
+    }
+    
+    loadSettings()
   }, [])
 
   const contactInfo = [

@@ -54,7 +54,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
     return { params: { slug } }
   })
 
-  return { paths, fallback: 'blocking' }
+  return { paths, fallback: false }
 }
 
 export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
@@ -83,6 +83,5 @@ export const getStaticProps: GetStaticProps<Props> = async ({ params }) => {
       source: mdxSource,
       frontmatter: data as Frontmatter,
     },
-    revalidate: 60,
   }
 }

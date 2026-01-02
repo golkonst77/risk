@@ -75,29 +75,7 @@ export function CookieConsent({ ymId = '105967457' }: CookieConsentProps) {
     setCookie('cookie_consent_accepted', 'true', 365)
 
     console.log('📋 Согласие сохранено локально:', data)
-
-    // Отправляем согласие на сервер для записи в БД
-    try {
-      const response = await fetch(`${runtimeBasePath}/api/cookie-consent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        if (result.saved) {
-          console.log('✅ Согласие сохранено на сервере, ID:', result.id)
-        } else {
-          console.log('⚠️ Согласие принято, но сохранение на сервере отложено')
-        }
-      }
-    } catch (error) {
-      console.log('⚠️ Не удалось отправить согласие на сервер:', error)
-      // Не показываем ошибку пользователю - согласие уже сохранено локально
-    }
+    // В статическом режиме согласие сохраняется только локально
   }
 
   const setCookie = (name: string, value: string, days: number) => {

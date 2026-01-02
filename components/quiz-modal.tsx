@@ -381,20 +381,30 @@ async function sendWhatsAppDocument(phone: string, quiz_result: "ip" | "ooo" | "
 
     const fileUrl = `${publicOrigin}${publicBase}/CHEK_LIST/Chek-list-perehoda.pdf`
 
-    // Отправляем чек-лист через WhatsApp
-    const response = await fetch('/api/send-whatsapp-document', {
+    // Отправляем чек-лист через WhatsApp напрямую к внешнему API
+    const whatsappApiUrl = process.env.NEXT_PUBLIC_WHATSAPP_API_URL || 'https://gate.whapi.cloud'
+    const whatsappApiKey = process.env.NEXT_PUBLIC_WHATSAPP_API_KEY || 'K9edm63ZcOVma3QQQZy4vQM7JQOSI1RF'
+    
+    const response = await fetch(`${whatsappApiUrl}/messages/document`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${whatsappApiKey}`,
       },
       body: JSON.stringify({
-        phone: cleanPhone,
-        filePath: fileUrl,
+        to: cleanPhone,
+        media: fileUrl,
         caption: caption,
       }),
     });
     
-    const result = await response.json();
+    const responseText = await response.text();
+    let result: any;
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      result = { error: responseText };
+    }
     
     if (!response.ok) {
       console.error('[QUIZ] Ошибка отправки файла:', JSON.stringify(result));
@@ -531,38 +541,10 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
       // Определяем тип бизнеса
       const businessType = getBusinessType(answers)
       
-      // Сохраняем купон в базу данных
-      try {
-        const response = await fetch('/api/coupons', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            code: fullCoupon,
-            phone: phone.trim(),
-            discount: discount,
-            business_type: businessType
-          })
-        })
-        
-        if (!response.ok) {
-          if (response.status === 501) {
-            couponSaved = false
-          } else {
-            throw new Error(`Ошибка при сохранении купона: ${response.status}`)
-          }
-        }
-        
-        if (response.ok) {
-          const result = await response.json()
-          console.log('Купон сохранен:', result)
-          couponSaved = true
-        }
-      } catch (error) {
-        console.error('Ошибка сохранения купона:', error)
-        couponSaved = false
-      }
+      // Купоны в статическом режиме не сохраняются на сервере
+      // Можно добавить внешний API для сохранения купонов в будущем
+      couponSaved = false
+      console.log('Купон сгенерирован (статический режим):', fullCoupon)
 
       // ✅ ВКЛЮЧЕНО: Отправка WhatsApp-сообщения клиенту
       try {
@@ -593,7 +575,7 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
         }
       }
 
-      // Отправляем уведомление администратору
+      // Отправляем уведомление администратору через внешний email сервис
       console.log('🚀 [QUIZ] Начинаем отправку уведомления администратору...', {
         phone: phone.trim(),
         discount: discount,
@@ -603,35 +585,43 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
       })
       
       try {
-        console.log('📡 [QUIZ] Вызываем API /api/admin/notify-quiz-completion...')
-        const notifyResponse = await fetch('/api/admin/notify-quiz-completion', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            phone: phone.trim(),
-            discount: discount,
-            businessType: businessType,
-            coupon: fullCoupon,
-            answers: answers
-          }),
-        })
-        
-        console.log('📡 [QUIZ] Получен ответ от API:', notifyResponse.status, notifyResponse.statusText)
+        const emailServiceUrl = process.env.NEXT_PUBLIC_EMAIL_SERVICE_URL
+        if (emailServiceUrl) {
+          const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'urist40@gmail.com'
+          const emailSubject = `Новая заявка с квиза: ${phone.trim()}`
+          const emailBody = `
+Новая заявка с квиза:
+- Телефон: ${phone.trim()}
+- Скидка: ${discount} ₽
+- Купон: ${fullCoupon}
+- Тип бизнеса: ${businessType}
+- Количество ответов: ${answers.length}
 
-        if (notifyResponse.status === 404) {
-          return
+Ответы:
+${JSON.stringify(answers, null, 2)}
+          `.trim()
+          
+          const emailResponse = await fetch(emailServiceUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              to: adminEmail,
+              subject: emailSubject,
+              text: emailBody,
+              html: emailBody.replace(/\n/g, '<br>')
+            }),
+          })
+          
+          if (emailResponse.ok) {
+            console.log('✅ [QUIZ] Уведомление администратору отправлено успешно')
+          } else {
+            console.error('❌ [QUIZ] Ошибка отправки email администратору:', emailResponse.status)
+          }
+        } else {
+          console.log('⚠️ [QUIZ] NEXT_PUBLIC_EMAIL_SERVICE_URL не настроен, уведомление не отправлено')
         }
-        
-        if (!notifyResponse.ok) {
-          const errorText = await notifyResponse.text()
-          const shortText = errorText.length > 500 ? `${errorText.slice(0, 500)}...` : errorText
-          throw new Error(`API ответил с ошибкой: ${notifyResponse.status} - ${shortText}`)
-        }
-        
-        const notifyResult = await notifyResponse.json()
-        console.log('✅ [QUIZ] Уведомление администратору отправлено успешно:', notifyResult)
       } catch (error) {
         console.error('❌ [QUIZ] Ошибка отправки уведомления администратору:', error)
         // Не критично для основного функционала
@@ -652,20 +642,12 @@ export function QuizModal({ open, onOpenChange }: { open?: boolean, onOpenChange
       if (whatsappSent) {
         toast({
           title: "Успешно!",
-          description: couponSaved
-            ? "Ваш купон сохранен и отправлен в WhatsApp."
-            : "Мы отправили вам предложение в WhatsApp. Сохранение купона на сайте временно недоступно.",
+          description: "Мы отправили вам предложение в WhatsApp.",
         })
       } else if (whatsappManual) {
         toast({
           title: "Почти готово",
           description: "Не удалось отправить сообщение автоматически. Откройте WhatsApp и отправьте сообщение вручную.",
-          variant: "default",
-        })
-      } else if (couponSaved) {
-        toast({
-          title: "Купон сохранен!",
-          description: "Купон сохранен, но возникли проблемы с отправкой в WhatsApp. Мы свяжемся с вами по телефону.",
           variant: "default",
         })
       } else {

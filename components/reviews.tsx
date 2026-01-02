@@ -58,15 +58,15 @@ export function Reviews() {
 
   const dynamicClients = calculateDynamicClients()
 
-  // Получение настроек из админки
+  // Получение настроек из статического JSON
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/admin/settings')
-      if (response.ok) {
-        const data = await response.json()
+      const siteConfigModule = await import('@/data/site-config.json')
+      const config = siteConfigModule.default || siteConfigModule
+      if (config && config.contacts) {
         setSettings({
-          address: data.address || 'Калуга, Дзержинского 37, офис 20',
-          phone: data.phone || '+7953 330-17-77'
+          address: config.contacts.address || 'Калуга, Дзержинского 37, офис 20',
+          phone: config.contacts.phone || '+7953 330-17-77'
         })
       }
     } catch (error) {
@@ -78,23 +78,12 @@ export function Reviews() {
     }
   }
 
-  // Получение информации о компании с Яндекс.Карт
+  // Информация о компании - используем дефолтные значения
   const fetchCompanyInfo = async () => {
-    try {
-      const response = await fetch('/api/yandex-reviews')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.company_info) {
-          setCompanyInfo({
-            name: data.company_info.name,
-            rating: data.company_info.rating || 5.0
-          })
-        }
-      }
-    } catch (error) {
-      console.error('Ошибка получения информации о компании:', error)
-      setCompanyInfo({ rating: 5.0 })
-    }
+    setCompanyInfo({ 
+      name: 'Просто Бюро',
+      rating: 5.0 
+    })
   }
 
   const fetchReviews = async () => {
@@ -102,56 +91,44 @@ export function Reviews() {
       setLoading(true)
       setError(null)
       
-      // Сначала пробуем локальный API
-      let response = await fetch('/api/local-reviews?limit=9')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success && Array.isArray(data.reviews)) {
-          const fetched = data.reviews
-          setReviews(fetched)
-          // Пересчитать агрегаты локально
-          if (fetched.length > 0) {
-            const avg = fetched.reduce((s: number, r: any) => s + (r.rating || 5), 0) / fetched.length
-            setAverageRating(Number(avg.toFixed(1)))
-            setTotalReviews(fetched.length)
-          } else {
-            setAverageRating(5.0)
-            setTotalReviews(0)
-          }
-          setPage(0)
-          return
-        }
+      // Читаем отзывы из статического JSON файла
+      const reviewsModule = await import('@/data/local-reviews.json')
+      const data = reviewsModule.default || reviewsModule
+      
+      // Поддерживаем разные форматы JSON
+      let reviewsList: any[] = []
+      if (Array.isArray(data)) {
+        reviewsList = data
+      } else if (data.reviews && Array.isArray(data.reviews)) {
+        reviewsList = data.reviews
+      } else if (data.success && Array.isArray(data.reviews)) {
+        reviewsList = data.reviews
       }
       
-      // Если локальный API не работает, пробуем Supabase
-      response = await fetch('/api/random-reviews?limit=9')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success && Array.isArray(data.reviews)) {
-          const fetched = data.reviews
-          setReviews(fetched)
-          // Пересчитать агрегаты локально
-          if (fetched.length > 0) {
-            const avg = fetched.reduce((s: number, r: any) => s + (r.rating || 5), 0) / fetched.length
-            setAverageRating(Number(avg.toFixed(1)))
-            setTotalReviews(fetched.length)
-          } else {
-            setAverageRating(5.0)
-            setTotalReviews(0)
-          }
-          setPage(0)
-        } else {
-          setError(data.error || 'Ошибка загрузки отзывов')
-          setReviews([])
-          setAverageRating(5.0)
-          setTotalReviews(0)
-        }
+      // Фильтруем только опубликованные отзывы
+      const publishedReviews = reviewsList.filter((r: any) => r.is_published !== false)
+      
+      // Сортируем по дате создания (новые первыми)
+      const sortedReviews = publishedReviews.sort((a: any, b: any) => {
+        const dateA = new Date(a.created_at || a.published_at || 0).getTime()
+        const dateB = new Date(b.created_at || b.published_at || 0).getTime()
+        return dateB - dateA
+      })
+      
+      // Загружаем все отзывы для пагинации
+      setReviews(sortedReviews)
+      
+      // Пересчитываем агрегаты
+      if (publishedReviews.length > 0) {
+        const avg = publishedReviews.reduce((s: number, r: any) => s + (r.rating || 5), 0) / publishedReviews.length
+        setAverageRating(Number(avg.toFixed(1)))
+        setTotalReviews(publishedReviews.length)
       } else {
-        setError('Ошибка загрузки отзывов')
-        setReviews([])
         setAverageRating(5.0)
         setTotalReviews(0)
       }
+      
+      setPage(0)
     } catch (error) {
       console.error('Ошибка загрузки отзывов:', error)
       setError('Ошибка загрузки отзывов')
@@ -164,23 +141,9 @@ export function Reviews() {
   }
 
   const fetchVideoReviews = async () => {
-    try {
-      const response = await fetch('/api/video-reviews?random=true&limit=3')
-      if (response.ok) {
-        const data = await response.json()
-        if (Array.isArray(data.reviews)) {
-          setVideoReviews(data.reviews)
-        } else {
-          setVideoReviews([])
-        }
-      } else {
-        console.error('Ошибка ответа API видеоотзывов:', response.status)
-        setVideoReviews([])
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки видеоотзывов:', error)
-      setVideoReviews([])
-    }
+    // Видеоотзывы пока не поддерживаются в статическом режиме
+    // Можно добавить статический JSON файл для видеоотзывов в будущем
+    setVideoReviews([])
   }
 
   useEffect(() => {

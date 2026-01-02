@@ -37,19 +37,31 @@ export const Header = () => {
   useEffect(() => {
     setIsClient(true)
     
-    // Загружаем настройки
+    // Загружаем настройки из статического JSON
     const loadSettings = async () => {
       try {
-        const res = await fetch('/api/settings', { cache: 'no-store' })
-        const loadedSettings = await res.json()
-        if (loadedSettings) {
-          setSettings(prev => ({
-            ...prev,
-            ...loadedSettings
-          }))
+        // Импортируем настройки напрямую из JSON файла
+        const siteConfigModule = await import('@/data/site-config.json')
+        const config = siteConfigModule.default || siteConfigModule
+        if (config && config.contacts) {
+          setSettings({
+            phone: config.contacts.phone || '+7 (953) 330-17-77',
+            email: config.contacts.email || 'urist40@gmail.com',
+            address: config.contacts.address || 'Калуга, Дзержинского 37, офис 20',
+            telegram: config.contacts.telegram || '@prostoburo',
+            vk: config.contacts.vk || 'vk.com/buh_urist'
+          })
         }
       } catch (error) {
         console.error('Failed to load settings:', error)
+        // Fallback значения
+        setSettings({
+          phone: '+7 (953) 330-17-77',
+          email: 'urist40@gmail.com',
+          address: 'Калуга, Дзержинского 37, офис 20',
+          telegram: '@prostoburo',
+          vk: 'vk.com/buh_urist'
+        })
       }
     }
     
